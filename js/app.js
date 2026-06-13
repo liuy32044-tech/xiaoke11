@@ -9,7 +9,7 @@ function closeSidebar(){document.getElementById("sidebar").classList.remove("ope
 function toggleSidebar(){document.getElementById("sidebar").classList.contains("open")?closeSidebar():openSidebar()}
 
 function loadSidebarSessions(){
-  fetch(API+"/api/chat/sessions").then(r=>r.json()).then(d=>{
+  fetch(API+"/api/sessions").then(r=>r.json()).then(d=>{
     document.getElementById("sidebar-sessions-list").innerHTML=d.sessions.map(s=>
       `<div class="si${s.id===currentSession?' active':''}" onclick="currentSession=${s.id};switchPage('chat');closeSidebar()"><div class="n">${esc(s.name||'对话 '+s.id)}</div><div class="t">${s.updated_at?s.updated_at.slice(5,16):''}</div></div>`
     ).join("")||'<div style="color:var(--textFaint);font-size:12px;padding:8px 12px">还没有对话</div>';
@@ -40,7 +40,7 @@ function setNavActive(page){
 }
 
 /* ═══ Pages ═══ */
-const TITLES={home:"小窝",chat:"聊天",reader:"回忆",dashboard:"数据"};
+const TITLES={home:"小窝",chat:"聊天",reader:"回忆",dashboard:"设置"};
 
 function switchPage(name){
   document.querySelectorAll(".page").forEach(p=>{p.style.display="none";p.classList.remove("active")});
@@ -73,7 +73,7 @@ function showPostForm(){const t=prompt("类型 (MEMORY / EVENT / MOMENT / PROMIS
 let isStreaming=!1;
 
 function loadChat(){
-  fetch(API+"/api/chat/messages/"+currentSession).then(r=>r.json()).then(d=>{
+  fetch(API+"/api/messages/"+currentSession).then(r=>r.json()).then(d=>{
     const el=document.getElementById("chat-msgs");
     if(d.messages.length===0){el.innerHTML=`<div class="date-divider"><span>今天</span></div><div style="text-align:center;color:var(--textFaint);margin-top:36px;font-size:13px">我是小克。有什么想和我说的吗？</div>`}
     else{el.innerHTML=`<div class="date-divider"><span>今天</span></div>`+d.messages.map(m=>msgHTML(m)).join("")}
@@ -101,7 +101,7 @@ function sendMessage(){
   const aw=document.createElement("div");aw.className="msg-row assistant";
   aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble"></div></div>`;msgs.appendChild(aw);
   const b=aw.querySelector(".msg-bubble");
-  fetch(API+"/api/chat/reply_stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
     function read(){rd.read().then(({done,v})=>{if(done){ty.style.display="none";isStreaming=!1;sb.className="send-btn off";return}
       for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
@@ -122,20 +122,48 @@ document.addEventListener("DOMContentLoaded",()=>{
 /* ═══ Sessions ═══ */
 function createSession(){fetch(API+"/api/chat/sessions",{method:"POST"}).then(r=>r.json()).then(d=>{currentSession=d.id;loadSidebarSessions();switchPage("chat")})}
 
-/* ═══ Dashboard ═══ */
+/* ═══ Settings ═══ */
 function loadDashboard(){
   document.getElementById("dashboard-date").textContent=new Date().toLocaleDateString("zh-CN");
+  fetch(API+"/api/settings").then(r=>r.json()).then(d=>{
+    const s=d.settings||{};
+    document.getElementById("set-system-prompt").value=s.system_prompt||"";
+    document.getElementById("set-temperature").value=s.temperature??0.7;
+    document.getElementById("set-temp-val").textContent=s.temperature??0.7;
+    document.getElementById("set-max-rounds").value=s.max_context_rounds||30;
+    document.getElementById("set-compress-threshold").value=s.compress_threshold||6000;
+    document.getElementById("set-keep-rounds").value=s.compress_keep_rounds||10;
+    document.getElementById("set-max-tokens").value=s.max_reply_tokens||4096;
+  }).catch(()=>{});
+  // Load stats too
   fetch(API+"/api/dashboard").then(r=>r.json()).then(d=>{
     document.getElementById("dash-stats").innerHTML=
-      `<div class="stat-item"><div class="v">${d.today_messages}</div><div class="l">今日消息</div></div>
-       <div class="stat-item"><div class="v">${fmtK(d.today_input_tokens+d.today_output_tokens)}</div><div class="l">今日 Token</div></div>
-       <div class="stat-item"><div class="v">$${d.today_cost}</div><div class="l">累计费用</div></div>
-       <div class="stat-item"><div class="v">${d.total_posts}</div><div class="l">记忆数量</div></div>`;
-    let h="";const mx=Math.max(1,...d.week_usage.map(r=>r.inp+r.outp));
-    const days=["周一","周二","周三","周四","周五","周六","周日"];
-    for(let i=0;i<7;i++){const v=d.week_usage[i]?d.week_usage[i].inp+d.week_usage[i].outp:0;const p=Math.max((v/mx)*60,4);h+=`<div class="bar-col"><div class="bar" style="height:${p}px;background:${v?'linear-gradient(135deg,#F2C4CE,#e8a0b4)':'var(--border)'}"></div><div class="dl">${days[i]}</div></div>`}
-    document.getElementById("week-chart").innerHTML=`<div class="bar-row">${h}</div>`;
-  });
+      `<div class="stat-item"><div class="v">${d.today_messages||0}</div><div class="l">今日消息</div></div>
+       <div class="stat-item"><div class="v">${fmtK((d.today_input_tokens||0)+(d.today_output_tokens||0))}</div><div class="l">今日 Token</div></div>
+       <div class="stat-item"><div class="v">$${d.today_cost||0}</div><div class="l">累计费用</div></div>
+       <div class="stat-item"><div class="v">${d.total_posts||0}</div><div class="l">记忆数量</div></div>`;
+  }).catch(()=>{});
+}
+
+function saveSettings(){
+  const btn=document.querySelector(".btn-save");btn.disabled=true;btn.textContent="保存中…";
+  const body={
+    system_prompt:document.getElementById("set-system-prompt").value,
+    temperature:parseFloat(document.getElementById("set-temperature").value),
+    max_context_rounds:parseInt(document.getElementById("set-max-rounds").value),
+    compress_threshold:parseInt(document.getElementById("set-compress-threshold").value),
+    compress_keep_rounds:parseInt(document.getElementById("set-keep-rounds").value),
+    max_reply_tokens:parseInt(document.getElementById("set-max-tokens").value)
+  };
+  fetch(API+"/api/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+    .then(r=>r.json()).then(()=>{
+      const el=document.getElementById("set-msg");el.textContent="已保存 ✓";el.style.color="var(--accent)";
+      setTimeout(()=>{el.textContent=""},2000);
+    }).catch(e=>{
+      const el=document.getElementById("set-msg");el.textContent="保存失败";el.style.color="var(--accentLight)";
+    }).finally(()=>{
+      btn.disabled=false;btn.textContent="保存设置";
+    });
 }
 
 /* ═══ Posts ═══ */
