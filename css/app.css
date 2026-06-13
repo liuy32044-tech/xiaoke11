@@ -19,7 +19,7 @@
 html,body{height:100%;overflow:hidden}
 body{
   font-family:'Georgia','Noto Serif SC','PingFang SC','Microsoft YaHei',serif;
-  background:var(--bg); color:var(--text);
+  background:var(--bg); color:#5c4048;
   -webkit-tap-highlight-color:transparent;
 }
 
@@ -56,7 +56,7 @@ body{
 .sidebar-new{padding:10px 12px;border-radius:12px;border:1px dashed var(--bubble);text-align:center;color:var(--textFaint);font-size:12px;cursor:pointer;margin-top:4px}
 
 .sidebar-footer{padding:14px 16px;border-top:1px solid var(--border)}
-.sidebar-footer select{width:100%;padding:7px 10px;border-radius:10px;border:1px solid var(--bubble);background:var(--bg);color:var(--textMid);font-size:12px;outline:none}
+.sidebar-footer select{width:100%;padding:7px 10px;border-radius:10px;border:1px solid var(--bubble);background:var(--bg);color:#7a5c62;font-size:12px;outline:none}
 
 /* ═══════ Top bar ═══════ */
 #top-bar{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#FFF5F8;flex-shrink:0}
@@ -125,8 +125,8 @@ body{
 /* chat input */
 .chat-input-area{padding:12px 16px 18px;background:#FFF5F8;border-top:1px solid var(--border)}
 .chat-input-row{display:flex;align-items:flex-end;gap:10px;background:#fff;border-radius:22px;border:1px solid #F2C4CE;padding:8px 8px 8px 16px}
-.chat-input-row textarea{flex:1;border:none;outline:none;resize:none;font-size:14px;color:var(--text);background:transparent;font-family:inherit;line-height:1.6;max-height:90px;padding:4px 0}
-.chat-input-row textarea::placeholder{color:var(--textFaint)}
+.chat-input-row textarea{flex:1;border:none;outline:none;resize:none;font-size:14px;color:#5c4048;background:transparent;font-family:inherit;line-height:1.6;max-height:90px;padding:4px 0}
+.chat-input-row textarea::placeholder{color:#d4a0ac}
 
 .send-btn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .2s}
 .send-btn.on{background:linear-gradient(135deg,#F2C4CE,#e8a0b4)}
@@ -164,10 +164,10 @@ body{
 
 /* ═══════ Bottom nav ═══════ */
 #bottom-nav{display:flex;border-top:1px solid var(--border);background:#FFF5F8;flex-shrink:0}
-#bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;background:none;border:none;cursor:pointer}
-#bottom-nav button .nl{font-size:10px;font-weight:400;color:var(--textSoft)}
-#bottom-nav button .nl.dim{color:var(--textSoft)}
-#bottom-nav button .nl.on{color:var(--accent);font-weight:600}
+#bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;background:none;border:none;cursor:pointer;color:#c9a0ac}
+#bottom-nav button .nl{font-size:10px;font-weight:400;color:#c9a0ac}
+#bottom-nav button .nl.dim{color:#c9a0ac}
+#bottom-nav button .nl.on{color:#c47a8a;font-weight:600}
 
 /* ═══════ Splash Screen ═══════ */
 #splash{
