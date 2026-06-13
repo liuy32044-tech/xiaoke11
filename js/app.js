@@ -91,7 +91,7 @@ function loadChat(force){
 function msgHTML(m){
   if(m.msg_type==="image"){try{const i=JSON.parse(m.content);return`<div class="msg-row user"><div class="msg-bubble"><img src="data:${i.media_type};base64,${i.data}"></div><div class="msg-time">${fmtTime(m.created_at)}</div></div>`}catch{return""}}
   const ts=fmtTime(m.created_at);
-  if(m.author==="user")return`<div class="msg-row user"><div class="msg-bubble">${esc(m.content)}</div><div class="msg-time">${ts}</div></div>`;
+  if(m.role==="user"||m.author==="user")return`<div class="msg-row user"><div class="msg-bubble">${esc(m.content)}</div><div class="msg-time">${ts}</div></div>`;
   return`<div class="msg-row assistant"><div class="msg-assistant-row">${CAT34}<div class="msg-bubble">${esc(m.content)}</div></div><div class="msg-time">${ts}</div></div>`;
 }
 function fmtTime(t){if(!t)return"";const m=t.match(/(\d{2}):(\d{2})/);return m?m[1]+":"+m[2]:""}
