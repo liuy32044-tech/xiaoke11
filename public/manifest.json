@@ -1,0 +1,12 @@
+{
+  "name": "小窝 · Bunny's Home",
+  "short_name": "小窝",
+  "description": "一个温暖的AI伴侣",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF6F8",
+  "theme_color": "#FDF6F8",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
