@@ -112,6 +112,17 @@ function sendMessage(){
   }).catch(e=>{b.textContent="网络错误: "+e.message;ty.style.display="none";isStreaming=!1;sb.className="send-btn off"});
 }
 
+/* ═══ Splash Screen ═══ */
+(function(){
+  const splash=document.getElementById("splash");
+  if(!splash)return;
+  splash.className="in";
+  // 动画入场 → 文字停留3秒 → 淡出消失
+  setTimeout(()=>{splash.className=""},200);          // 入场动画结束
+  setTimeout(()=>{splash.classList.add("out")},3400); // 停留3秒后淡出
+  setTimeout(()=>{if(splash)splash.remove()},4000);   // 淡出完成后移除
+})();
+
 /* ═══ Input button state ═══ */
 document.addEventListener("DOMContentLoaded",()=>{
   const inp=document.getElementById("chat-input"),sb=document.getElementById("send-btn");
