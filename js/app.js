@@ -105,17 +105,26 @@ function sendMessage(){
   msgs.scrollTop=msgs.scrollHeight;inp.value="";inp.style.height="auto";
   const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble"></div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
   const b=aw.querySelector(".msg-bubble");
+  // 先试流式
+  let gotResponse=false;
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
+    if(!r.ok||!r.body){throw new Error("no stream")}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
-    function read(){rd.read().then(({done,v})=>{if(done){ty.style.display="none";isStreaming=!1;sb.className="send-btn off";return}
+    function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
       for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;b.textContent=ft;msgs.scrollTop=msgs.scrollHeight}
-        else if(dt.type==="done"){ty.style.display="none";isStreaming=!1;sb.className="send-btn off";loadSidebarSessions()}
-        else if(dt.type==="error"){b.textContent="出错了: "+dt.text;ty.style.display="none";isStreaming=!1;sb.className="send-btn off"}
-      }catch{}}read()})}read()
-  }).catch(e=>{b.textContent="网络错误: "+e.message;ty.style.display="none";isStreaming=!1;sb.className="send-btn off"});
+        if(dt.type==="text"){ft+=dt.text;b.textContent=ft||"...";msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){finish(ft)}
+        else if(dt.type==="error"){b.textContent="出错了: "+dt.text;finish("")}
+      }catch{}}
+    read()})}read()
+  }).catch(()=>{finish("")});
+  function finish(streamText){
+    ty.style.display="none";isStreaming=!1;sb.className="send-btn off";loadSidebarSessions();
+    // 等后端存好 → 从库刷完整消息列表
+    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1000);
+  }
 }
 
 /* ═══ Splash Screen ═══ */
