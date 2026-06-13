@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <title>📊 Dashboard — 小克</title>
+</head>
+<body>
+<div class="page-header">
+  <span>📊 数据面板</span>
+  <a href="/" style="color:var(--accent);text-decoration:none;font-size:14px">← 返回</a>
+</div>
+<div class="stat-row" id="dash-stats"></div>
+<div class="card">
+  <div class="card-title">📈 近7天 Token 用量</div>
+  <div id="week-chart" style="min-height:100px"></div>
+</div>
+<div class="card">
+  <div class="card-title">📋 模型定价</div>
+  <table style="width:100%;font-size:13px;color:var(--text-dim);border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px">deepseek-v4-pro</td><td>$0.55/M in</td><td>$2.19/M out</td></tr>
+    <tr><td style="padding:8px">deepseek-v4-flash</td><td>$0.27/M in</td><td>$1.10/M out</td></tr>
+  </table>
+</div>
+<script>const API="";function fmtK(n){return n>=1000?(n/1000).toFixed(1)+"K":n}fetch(API+"/api/dashboard").then(r=>r.json()).then(d=>{document.getElementById("dash-stats").innerHTML=`<div class="stat-box"><div class="number">${d.today_messages}</div><div class="label">今日消息</div></div><div class="stat-box"><div class="number">${fmtK(d.today_input_tokens+d.today_output_tokens)}</div><div class="label">今日Token</div></div><div class="stat-box"><div class="number">$${d.today_cost}</div><div class="label">费用</div></div><div class="stat-box"><div class="number">${d.total_posts}</div><div class="label">记忆</div></div>`;let h="";const m=Math.max(1,...d.week_usage.map(r=>r.inp+r.outp));for(const r of d.week_usage){const p=((r.inp+r.outp)/m*70)+4;h+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--text-dim)"><div style="background:var(--accent);height:${p}px;border-radius:4px 4px 0 0"></div>${r.d?r.d.slice(5):""}</div>`}document.getElementById("week-chart").innerHTML=`<div style="display:flex;align-items:flex-end;gap:6px;height:80px">${h}</div>`})</script>
+</body>
+</html>

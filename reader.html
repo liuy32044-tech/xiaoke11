@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/app.css">
+<title>📖 记忆 — 小克</title>
+</head>
+<body>
+<div class="page-header">
+  <span>📖 记忆存档</span>
+  <div>
+    <select id="post-filter" onchange="load()" style="width:auto;padding:6px 10px;font-size:13px;margin-right:8px">
+      <option value="">全部</option><option value="MEMORY">记忆</option><option value="EVENT">事件</option><option value="MOMENT">瞬间</option><option value="PROMISES">承诺</option><option value="WISHLIST">愿望</option>
+    </select>
+    <button onclick="add()" class="primary" style="font-size:13px;padding:6px 12px">+ 记录</button>
+  </div>
+</div>
+<div class="card">
+  <input type="text" id="search-q" placeholder="搜索记忆..." oninput="search()" style="width:100%">
+</div>
+<div id="list"></div>
+<a href="/" style="display:block;text-align:center;padding:16px;color:var(--accent)">← 返回首页</a>
+<script>
+const API="";
+function load(){const f=document.getElementById("post-filter").value;const u=f?API+"/api/posts?type="+f:API+"/api/posts";fetch(u).then(r=>r.json()).then(d=>{document.getElementById("list").innerHTML=d.posts.length?d.posts.map(p=>`<div class="post-card"><div class="meta"><span style="background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">${p.type}</span><span>${p.created_at}</span></div><p style="line-height:1.6;white-space:pre-wrap">${esc(p.content)}</p><button onclick="del(${p.id})" style="background:none;border:none;color:var(--text-dim);font-size:13px;margin-top:4px;cursor:pointer">删除</button></div>`).join(""):'<p style="color:var(--text-dim);padding:32px;text-align:center">暂无记录</p>'})}
+function add(){const t=prompt("类型","MEMORY");if(!t)return;const c=prompt("内容");if(!c)return;fetch(API+"/api/posts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:t,content:c})}).then(()=>load())}
+function del(id){if(!confirm("删除？"))return;fetch(API+"/api/posts/"+id,{method:"DELETE"}).then(()=>load())}
+function search(){const q=document.getElementById("search-q").value.trim();if(!q)return load();fetch(API+"/api/search?q="+encodeURIComponent(q)).then(r=>r.json()).then(d=>{document.getElementById("list").innerHTML=d.results.map(r=>r.type==="post"?`<div class="post-card"><div class="meta"><span style="background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">${r.data.type}</span><span>${r.score.toFixed(2)}</span></div><p>${esc(r.data.content).slice(0,300)}</p></div>`:`<div class="post-card"><div class="meta"><span>对话片段</span><span>${r.score.toFixed(2)}</span></div><p>${esc(r.text||"").slice(0,300)}</p></div>`).join("")||"<p style='padding:32px;text-align:center;color:var(--text-dim)'>没有匹配的记忆</p>"})}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+load();
+</script>
+</body>
+</html>

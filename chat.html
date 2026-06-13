@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/app.css">
+<title>💬 聊天 — 小克</title>
+</head>
+<body>
+<div class="page-header">
+  <span>💬 <span id="sn">聊天</span></span>
+  <div>
+    <button onclick="newS()" style="background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;margin-right:8px">+ 新对话</button>
+    <a href="/" style="color:var(--accent);text-decoration:none;font-size:14px">← 首页</a>
+  </div>
+</div>
+<div style="display:flex;overflow-x:auto;gap:6px;padding:0 16px 8px;-webkit-overflow-scrolling:touch" id="session-tabs"></div>
+<div class="chat-messages" id="msgs" style="height:calc(100vh - 210px)"></div>
+<div id="typing" class="typing-indicator" style="display:none"><span></span><span></span><span></span></div>
+<div class="chat-input-area" style="position:fixed;bottom:0;left:0;right:0">
+  <button onclick="document.getElementById('fi').click()" style="background:var(--bg-input);width:36px;height:36px;font-size:16px;border-radius:50%;border:none;color:var(--text);cursor:pointer">📎</button>
+  <input type="file" id="fi" accept="image/*" style="display:none" onchange="upImg()">
+  <textarea id="inp" rows="1" placeholder="说点什么..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
+  <button id="sbtn" onclick="send()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:18px;cursor:pointer">↑</button>
+</div>
+<div style="height:70px"></div>
+
+<script>
+const API="";
+let sid=1,streaming=!1;
+
+function init(){
+  fetch(API+"/api/chat/sessions").then(r=>r.json()).then(d=>{
+    document.getElementById("session-tabs").innerHTML=d.sessions.map(s=>`<button onclick="switchS(${s.id})" style="flex-shrink:0;padding:6px 14px;border-radius:16px;border:1px solid var(--border);background:${s.id===sid?'var(--accent)':'var(--bg-card)'};color:${s.id===sid?'#fff':'var(--text-dim)'};font-size:13px;cursor:pointer;white-space:nowrap">${esc(s.name)||'对话'+s.id}</button>`).join("")
+  });
+  loadMsgs()
+}
+
+function switchS(id){sid=id;init();loadMsgs()}
+function newS(){fetch(API+"/api/chat/sessions",{method:"POST"}).then(r=>r.json()).then(d=>{sid=d.id;init();loadMsgs()})}
+
+function loadMsgs(){fetch(API+"/api/chat/messages/"+sid).then(r=>r.json()).then(d=>{const e=document.getElementById("msgs");e.innerHTML=d.messages.length?d.messages.map(m=>{if(m.msg_type==="image")try{const i=JSON.parse(m.content);return`<div class="message ${m.author}"><div class="bubble"><img src="data:${i.media_type};base64,${i.data}" style="max-width:180px;border-radius:8px"></div></div>`}catch{return""}return`<div class="message ${m.author}"><div class="bubble">${esc(m.content)}</div></div>`}).join(""):`<div style="text-align:center;color:var(--text-dim);margin-top:60px;font-size:14px">我是小克。有什么想和我说的吗？</div>`;e.scrollTop=e.scrollHeight;document.getElementById("sn").textContent="对话 "+sid})}
+
+function send(){
+  if(streaming)return;
+  const t=document.getElementById("inp").value.trim();
+  if(!t)return;
+  streaming=!0;document.getElementById("sbtn").disabled=!0;
+  const m=document.getElementById("msgs"),ty=document.getElementById("typing");
+  m.innerHTML+=`<div class="message user"><div class="bubble">${esc(t)}</div></div>`;
+  m.scrollTop=m.scrollHeight;document.getElementById("inp").value="";ty.style.display="flex";
+  const ab=document.createElement("div");ab.className="message assistant";ab.innerHTML='<div class="bubble"></div>';m.appendChild(ab);
+  const b=ab.querySelector(".bubble");
+  fetch(API+"/api/chat/reply_stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:sid,message:t})}).then(r=>{const rd=r.body.getReader(),dc=new TextDecoder();let ft="";function read(){rd.read().then(({done,v})=>{if(done){ty.style.display="none";streaming=!1;document.getElementById("sbtn").disabled=!1;return}for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));if(dt.type==="text"){ft+=dt.text;b.textContent=ft;m.scrollTop=m.scrollHeight}else if(dt.type==="done"){ty.style.display="none";streaming=!1;document.getElementById("sbtn").disabled=!1;init()}}catch{}}read()})}read()}).catch(e=>{b.textContent="错误: "+e.message;ty.style.display="none";streaming=!1;document.getElementById("sbtn").disabled=!1})}
+
+function upImg(){const f=document.getElementById("fi").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);fetch(API+"/api/chat/upload",{method:"POST",body:fd}).then(()=>loadMsgs())}
+
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+// Auto-resize textarea
+document.getElementById("inp").addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,100)+"px"});
+
+init();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js");
+</script>
+</body>
+</html>

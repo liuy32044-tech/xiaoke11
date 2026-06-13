@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/app.css">
+<title>🖼 贴纸 — 小克</title>
+</head>
+<body>
+<div class="page-header">
+  <span>🖼 贴纸板</span>
+  <button onclick="document.getElementById('upload').click()" class="primary" style="font-size:13px;padding:6px 12px">+ 上传</button>
+  <input type="file" id="upload" accept="image/*" style="display:none" onchange="up()">
+</div>
+<div id="grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px"></div>
+<a href="/" style="display:block;text-align:center;padding:16px;color:var(--accent)">← 返回</a>
+<script>
+const API="";
+function load(){fetch(API+"/api/stickers").then(r=>r.json()).then(d=>{document.getElementById("grid").innerHTML=d.stickers.map(s=>`<div style="background:var(--bg-card);border-radius:8px;padding:8px;text-align:center;border:1px solid var(--border)"><img src="/stickers/${s.filename}" style="width:100%;max-height:100px;object-fit:cover;border-radius:4px" loading="lazy"><div style="font-size:11px;color:var(--text-dim);margin-top:4px">${s.label||""}</div></div>`).join("")||"暂无贴纸"})}
+function up(){const f=document.getElementById("upload").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);fetch(API+"/api/stickers/upload",{method:"POST",body:fd}).then(()=>load())}
+load();
+</script>
+</body>
+</html>

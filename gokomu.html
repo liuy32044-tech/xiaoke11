@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/app.css">
+<title>🎮 五子棋 — 小克</title>
+<style>#board{display:grid;grid-template-columns:repeat(15,1fr);max-width:360px;margin:16px auto;aspect-ratio:1;background:var(--bg-card);border-radius:8px;overflow:hidden}#board div{border:.5px solid rgba(255,255,255,.08);aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}#board div:hover{background:rgba(233,69,96,.15)}</style>
+</head>
+<body>
+<div class="page-header">
+  <span>🎮 五子棋</span>
+  <span id="status" style="font-size:14px;color:var(--accent)">你的回合</span>
+</div>
+<div id="board"></div>
+<div style="text-align:center;padding:12px">
+  <button onclick="reset()" class="primary" style="padding:10px 30px">重新开始</button>
+  <a href="/" style="display:block;margin-top:12px;color:var(--accent)">← 返回首页</a>
+</div>
+<script>
+const SIZE=15;let board=[],turn="⚫",over=!1;
+function reset(){board=Array.from({length:SIZE},()=>Array(SIZE).fill(""));turn="⚫";over=!1;document.getElementById("status").textContent="你的回合";render()}
+function render(){const b=document.getElementById("board");b.innerHTML="";for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){const d=document.createElement("div");d.textContent=board[r][c];d.onclick=()=>play(r,c);b.appendChild(d)}}
+function check(r,c,s){const dirs=[[1,0],[0,1],[1,1],[1,-1]];for(const[dr,dc]of dirs){let n=1;for(let i=1;i<5;i++){const nr=r+dr*i,nc=c+dc*i;if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&board[nr][nc]===s)n++;else break}for(let i=1;i<5;i++){const nr=r-dr*i,nc=c-dc*i;if(nr>=0&&nr<SIZE&&nc>=0&&nc<SIZE&&board[nr][nc]===s)n++;else break}if(n>=5)return!0}return!1}
+function play(r,c){if(over||board[r][c]!=="")return;board[r][c]=turn;render();if(check(r,c,turn)){document.getElementById("status").textContent=(turn==="⚫"?"你":"AI")+"赢了！";over=!0;return}if(board.flat().filter(Boolean).length===SIZE*SIZE){document.getElementById("status").textContent="平局！";over=!0;return}turn=turn==="⚫"?"⚪":"⚫";document.getElementById("status").textContent=turn==="⚫"?"你的回合":"AI 思考中...";if(!over&&turn==="⚪")setTimeout(aiMove,400)}
+function aiMove(){const empty=[];for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)if(!board[r][c])empty.push([r,c]);if(!empty.length)return;const[mr,mc]=empty[Math.floor(Math.random()*empty.length)];play(mr,mc)}
+reset();
+</script>
+</body>
+</html>

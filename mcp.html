@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/app.css">
+<title>🔌 MCP — 小克</title>
+</head>
+<body>
+<div class="page-header">
+  <span>🔌 MCP 工具</span>
+  <a href="/" style="color:var(--accent);text-decoration:none;font-size:14px">← 返回</a>
+</div>
+<div class="card">
+  <div class="card-title">MCP 状态</div>
+  <p style="color:var(--text-dim);font-size:14px" id="mcp-status">检查中...</p>
+</div>
+<div class="card">
+  <div class="card-title">可用工具</div>
+  <div id="tools-list" style="color:var(--text-dim);font-size:14px;line-height:1.8">
+    <p>MCP (Model Context Protocol) 模块允许 AI 调用外部工具。</p>
+    <p style="margin-top:8px">配置 mcp_client.py 以连接自定义工具服务器。</p>
+  </div>
+</div>
+<script>
+fetch("/api/mcp/call",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tool:"ping",params:{}})}).then(r=>r.json()).then(d=>{document.getElementById("mcp-status").textContent=d.error?"MCP 服务未启动":"✅ MCP 已连接"})
+</script>
+</body>
+</html>
