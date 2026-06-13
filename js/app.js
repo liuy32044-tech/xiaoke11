@@ -40,7 +40,7 @@ function setNavActive(page){
 }
 
 /* ═══ Pages ═══ */
-const TITLES={home:"小窝",chat:"聊天",reader:"回忆",dashboard:"设置"};
+const TITLES={home:"小克",chat:"聊天",reader:"回忆",dashboard:"设置"};
 
 function switchPage(name){
   document.querySelectorAll(".page").forEach(p=>{p.style.display="none";p.classList.remove("active")});
