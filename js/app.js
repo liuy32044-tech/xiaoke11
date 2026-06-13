@@ -71,8 +71,14 @@ function showPostForm(){const t=prompt("类型 (MEMORY / EVENT / MOMENT / PROMIS
 
 /* ═══ Chat ═══ */
 let isStreaming=!1;
+let lastLoadedSession=null;
 
-function loadChat(){
+function loadChat(force){
+  // 流式进行中，绝不覆盖
+  if(isStreaming)return;
+  // session 没变且页面已有消息且没强制，不覆盖
+  if(!force && currentSession===lastLoadedSession && document.getElementById("chat-msgs").children.length>2)return;
+  lastLoadedSession=currentSession;
   fetch(API+"/api/messages/"+currentSession).then(r=>r.json()).then(d=>{
     const el=document.getElementById("chat-msgs");
     if(d.messages.length===0){el.innerHTML=`<div class="date-divider"><span>今天</span></div><div style="text-align:center;color:var(--textFaint);margin-top:36px;font-size:13px">我是小克。有什么想和我说的吗？</div>`}
@@ -131,7 +137,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 /* ═══ Sessions ═══ */
-function createSession(){fetch(API+"/api/chat/sessions",{method:"POST"}).then(r=>r.json()).then(d=>{currentSession=d.id;loadSidebarSessions();switchPage("chat")})}
+function createSession(){fetch(API+"/api/sessions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:"新对话"})}).then(r=>r.json()).then(d=>{currentSession=d.id;lastLoadedSession=null;loadSidebarSessions();switchPage("chat")})}
 
 /* ═══ Settings ═══ */
 function loadDashboard(){
