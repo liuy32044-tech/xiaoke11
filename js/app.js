@@ -347,8 +347,15 @@ function sendSticker(url){
    SWIPE-TO-DELETE (通用右滑删除)
    ═══════════════════════════════════════════════════════ */
 /* ═══ Data persistence ═══ */
-function saveData(){try{localStorage.setItem("xiaoke_subpage",JSON.stringify(subPageData))}catch(e){}}
-function loadData(){try{const d=localStorage.getItem("xiaoke_subpage");if(d){const p=JSON.parse(d);subPageData=p}}}catch(e){}
+function saveData(){
+  try{localStorage.setItem("xiaoke_subpage",JSON.stringify(subPageData))}catch(e){}
+}
+function loadData(){
+  try{
+    const d=localStorage.getItem("xiaoke_subpage");
+    if(d){const p=JSON.parse(d);subPageData=p}
+  }catch(e){}
+}
 loadData();
 
 /* ═══ Swipe ═══ */
@@ -771,7 +778,7 @@ function renderMoments(){
         ${p.img?`<div class="moment-img" style="background-image:url(${p.img})"></div>`:''}
         <div class="moment-actions"><span onclick="likeMoment(${i})">♡ ${p.likes}</span><span onclick="commentMoment(${i})">✎ ${p.comments.length}</span></div>
         <div class="moment-comments">${p.comments.map((c,j)=>`<div>${j===0?'她：':'我：'}${c}</div>`).join("")}</div>
-      </div>`).join("")}:`<div style="text-align:center;padding:40px 20px;color:var(--textFaint);font-size:13px">还没有动态 ✿<br/>点「+ 发布」分享第一条吧</div>`}</div>
+      </div>`).join(""):`<div style="text-align:center;padding:40px 20px;color:var(--textFaint);font-size:13px">还没有动态 ✿<br/>点「+ 发布」分享第一条吧</div>`}</div>
   `;
   initSwipeToDelete("#moments-list",id=>{
     subPageData.moments.splice(id,1);
