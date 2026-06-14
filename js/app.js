@@ -126,34 +126,32 @@ function sendMessage(){
   const msgs=document.getElementById("chat-msgs"),now=new Date(),time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
   msgs.innerHTML+=`<div class="msg-row user"><div class="msg-bubble">${esc(text)}</div><div class="msg-time">${time}</div></div>`;
   msgs.scrollTop=msgs.scrollHeight;inp.value="";inp.style.height="auto";
-  const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
+  // 占位消息 — 头像+气泡，同时充当"正在输入…"的视觉反馈（不再单独显示typing指示器）
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">正在想…</div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble" id="stream-bubble">…</div></div>`;msgs.appendChild(aw);
+  msgs.scrollTop=msgs.scrollHeight;
   const b=aw.querySelector(".msg-bubble");
-  // 等待提示：超过6秒还没收到第一个字，显示"还在想…"
-  const thinkingTimer=setTimeout(()=>{if(b.textContent==="正在想…")b.textContent="还在想…"},6000);
-  // 超时保护：120秒，Render冷启动+DeepSeek可能很慢
+  const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},5000);
   const abortController=new AbortController();
-  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="宝宝，它还没回复…可能服务器在重启，再试一次？";finish("")},120000);
+  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="太久没回复…可能服务器在重启，再试一次？";finish("")},90000);
   let firstWord=false;
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
-    if(!r.ok||!r.body){throw new Error("no stream")}
+    if(!r.ok||!r.body){throw new Error("status "+r.status)}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
     function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
       for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"...";msgs.scrollTop=msgs.scrollHeight}
+        if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
         else if(dt.type==="done"){finish(ft)}
-        else if(dt.type==="error"){b.textContent="宝宝，服务器出了点问题："+dt.text;finish("")}
+        else if(dt.type==="error"){b.textContent="服务器说："+dt.text;finish("")}
       }catch{}}
     read()})}read()
   }).catch(e=>{
-    if(e.name==="AbortError"){b.textContent="宝宝，等了很久还没回复…服务器可能在睡觉。再发一条试试？"}
-    else{b.textContent="宝宝，连不上了…检查一下网络？"}
+    b.textContent=e.name==="AbortError"?"等了很久没回…再发一条试试？":"连不上服务器…过会儿再试？";
     finish("");
   });
   function finish(streamText){
     clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
-    ty.style.display="none";isStreaming=!1;sb.className="send-btn off";loadSidebarSessions();
+    isStreaming=!1;sb.className="send-btn off";loadSidebarSessions();
     setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1500);
   }
 }
@@ -334,25 +332,28 @@ function sendSticker(url){
   const msgs=document.getElementById("chat-msgs"),now=new Date(),time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
   msgs.innerHTML+=`<div class="msg-row user"><div class="msg-bubble"><img src="${url}" class="sticker-in-msg"></div><div class="msg-time">${time}</div></div>`;
   msgs.scrollTop=msgs.scrollHeight;
-  const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
   isStreaming=!0;
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">…</div></div>`;msgs.appendChild(aw);
+  msgs.scrollTop=msgs.scrollHeight;
   const b=aw.querySelector(".msg-bubble");
-  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"})}).then(r=>{
+  const abortController=new AbortController();
+  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="太久没回复，再试一次？";finishStickerStream("")},90000);
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"}),signal:abortController.signal}).then(r=>{
     if(!r.ok||!r.body){throw new Error("no stream")}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
     function read(){rd.read().then(({done,v})=>{if(done){finishStickerStream(ft);return}
       for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;b.innerHTML=esc(ft)||"...";msgs.scrollTop=msgs.scrollHeight}
+        if(dt.type==="text"){ft+=dt.text;b.innerHTML=esc(ft)||"…";msgs.scrollTop=msgs.scrollHeight}
         else if(dt.type==="done"){finishStickerStream(ft)}
         else if(dt.type==="error"){b.textContent="出错了: "+dt.text;finishStickerStream("")}
       }catch{}}
     read()})}read()
-  }).catch(()=>{finishStickerStream("")});
+  }).catch(e=>{b.textContent="发送失败…";finishStickerStream("")});
   function finishStickerStream(ft){
-    ty.style.display="none";isStreaming=!1;loadSidebarSessions();
-    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1000);
+    clearTimeout(timeoutTimer);
+    isStreaming=!1;loadSidebarSessions();
+    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1500);
   }
 }
 
