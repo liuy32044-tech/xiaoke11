@@ -148,8 +148,9 @@ function sendMessage(){
   });
   function finish(streamText){
     clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
-    isStreaming=false;sb.className="send-btn off";loadSidebarSessions();
-    // 不再从数据库重载——流式内容已经正确显示在DOM中，避免闪烁
+    isStreaming=false;sb.className="send-btn off";
+    // 仅首次消息后刷新会话列表（更新"最后活跃时间"），后续不影响
+    if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
     lastLoadedSession=currentSession;
   }
 }
@@ -158,6 +159,9 @@ function sendMessage(){
 (function(){
   const splash=document.getElementById("splash");
   if(!splash)return;
+  // 同一会话不重复展示开屏
+  if(sessionStorage.getItem("splash-showed")){splash.remove();return}
+  sessionStorage.setItem("splash-showed","1");
   splash.addEventListener("click",function(){splash.classList.add("out");setTimeout(function(){if(splash.parentNode)splash.remove()},600)});
   splash.className="in";
   setTimeout(function(){splash.className=""},200);
@@ -168,7 +172,10 @@ function sendMessage(){
 /* ═══ Input + Warmup ═══ */
 document.addEventListener("DOMContentLoaded",()=>{
   const inp=document.getElementById("chat-input"),sb=document.getElementById("send-btn");
-  if(inp&&sb){inp.addEventListener("input",()=>{const has=inp.value.trim().length>0;sb.className="send-btn "+(has?"on":"off")})}
+  if(inp&&sb){
+    inp.addEventListener("input",()=>{const has=inp.value.trim().length>0;sb.className="send-btn "+(has?"on":"off");inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight,100)+"px"});
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
+  }
   refreshHomeDays();loadSidebarSessions();
   setTimeout(()=>{fetch(API+"/api/health").catch(()=>{})},500);
 });
@@ -286,7 +293,7 @@ function sendSticker(url){
       }catch{}}
     read()})}read()
   }).catch(e=>{b.textContent="发送失败…";finishStickerStream("")});
-  function finishStickerStream(ft){clearTimeout(timeoutTimer);isStreaming=false;loadSidebarSessions();lastLoadedSession=currentSession}
+  function finishStickerStream(ft){clearTimeout(timeoutTimer);isStreaming=false;lastLoadedSession=currentSession}
 }
 
 /* ═══ Data persistence + quota protection ═══ */
