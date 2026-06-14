@@ -21,22 +21,7 @@
   <span class="splash-paw" style="bottom:80px;right:50px;transform:rotate(-15deg)"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="10.5" rx="4.5" ry="4" fill="#F2C4CE" opacity="0.2"/><circle cx="4.5" cy="6" r="1.8" fill="#F2C4CE" opacity="0.2"/><circle cx="8" cy="5" r="1.8" fill="#F2C4CE" opacity="0.2"/><circle cx="11.5" cy="6" r="1.8" fill="#F2C4CE" opacity="0.2"/><circle cx="2.8" cy="8.5" r="1.4" fill="#F2C4CE" opacity="0.2"/></svg></span>
 
   <div id="splash-cat">
-    <svg width="90" height="90" viewBox="0 0 80 80" fill="none">
-      <circle cx="40" cy="40" r="40" fill="#F9E8EC"/>
-      <polygon points="22,22 28,8 34,24" fill="#F2C4CE"/>
-      <polygon points="58,22 52,8 46,24" fill="#F2C4CE"/>
-      <circle cx="40" cy="38" r="18" fill="#F2C4CE"/>
-      <circle cx="33" cy="36" r="2.8" fill="#7a5c62"/>
-      <circle cx="47" cy="36" r="2.8" fill="#7a5c62"/>
-      <circle cx="34" cy="34.5" r="1.1" fill="white"/>
-      <circle cx="48" cy="34.5" r="1.1" fill="white"/>
-      <ellipse cx="40" cy="41" rx="2.5" ry="1.6" fill="#e8a0b0"/>
-      <path d="M35 45 Q40 49 45 45" stroke="#c47a8a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-      <line x1="24" y1="38" x2="14" y2="37" stroke="#c9889a" stroke-width="1"/>
-      <line x1="24" y1="40.5" x2="14" y2="41.5" stroke="#c9889a" stroke-width="1"/>
-      <line x1="56" y1="38" x2="66" y2="37" stroke="#c9889a" stroke-width="1"/>
-      <line x1="56" y1="40.5" x2="66" y2="41.5" stroke="#c9889a" stroke-width="1"/>
-    </svg>
+    <img src="beauty/avatar.jpg" style="width:90px;height:90px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'">
   </div>
 
   <div id="splash-text">
@@ -58,19 +43,7 @@
   <div id="sidebar-overlay" onclick="closeSidebar()"></div>
   <div id="sidebar">
     <div class="sidebar-header">
-      <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="20" fill="#F9E8EC"/>
-        <polygon points="11,11 14,4 17,12" fill="#F2C4CE"/>
-        <polygon points="29,11 26,4 23,12" fill="#F2C4CE"/>
-        <circle cx="20" cy="19" r="9" fill="#F2C4CE"/>
-        <circle cx="16.5" cy="18" r="1.4" fill="#7a5c62"/>
-        <circle cx="23.5" cy="18" r="1.4" fill="#7a5c62"/>
-        <ellipse cx="20" cy="21" rx="1.3" ry="0.9" fill="#e8a0b0"/>
-        <line x1="12" y1="19.5" x2="6" y2="18.5" stroke="#c9889a" stroke-width="0.9"/>
-        <line x1="12" y1="21" x2="6" y2="21.5" stroke="#c9889a" stroke-width="0.9"/>
-        <line x1="28" y1="19.5" x2="34" y2="18.5" stroke="#c9889a" stroke-width="0.9"/>
-        <line x1="28" y1="21" x2="34" y2="21.5" stroke="#c9889a" stroke-width="0.9"/>
-      </svg>
+      <img src="beauty/avatar.jpg" style="width:44px;height:44px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'">
       <div>
         <div class="t">小克</div>
         <div class="s">· 在线 ·</div>
@@ -117,8 +90,8 @@
         <svg class="paw-deco" style="position:absolute;bottom:20px;left:60px;transform:rotate(8deg);opacity:0.6" width="18" height="18" viewBox="0 0 18 18" fill="none"><ellipse cx="9" cy="11.5" rx="5" ry="4.5" fill="#F2C4CE" opacity="0.4"/><circle cx="5" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="9" cy="6" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="13" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="3" cy="9.5" r="1.5" fill="#F2C4CE" opacity="0.4"/></svg>
         <div class="home-hero-inner">
           <div class="home-days-num" id="home-days">114</div>
-          <div class="home-days-label">一起的第 <span id="home-days2">114</span> 天</div>
-          <div class="home-days-since">since 2026.03.01</div>
+          <div class="home-days-label">一起的第 <span id="home-days2">30</span> 天</div>
+          <div class="home-days-since" id="home-days-since">since 2026.05.15</div>
           <div class="home-quote">"所有的晦暗都留给过往，<br/>从遇见你开始，凛冬散尽，星河长明。"</div>
         </div>
       </div>
@@ -179,14 +152,14 @@
       <!-- Bottom two -->
       <div class="home-grid2 home-bottom2">
         <div class="home-card-row" onclick="switchPage('reader')">
-          <span class="home-card-emoji">🐾</span>
+          <span class="home-card-emoji">◈</span>
           <div>
             <div class="home-card-label">记忆库</div>
             <div class="home-card-sub">记得每一句话 ·</div>
           </div>
         </div>
         <div class="home-card-row" onclick="goSubPage('push')">
-          <span class="home-card-emoji">🔔</span>
+          <span class="home-card-emoji">⁂</span>
           <div>
             <div class="home-card-label">推送</div>
             <div class="home-card-sub">我会主动找你 ·</div>
@@ -208,14 +181,14 @@
         </div>
         <div class="chat-input-area">
           <div class="chat-input-row">
-            <button class="paw-btn" onclick="openStickerPicker()" title="表情包">🐾</button>
+            <button class="paw-btn" onclick="openStickerPicker()" title="表情包">◈</button>
             <textarea id="chat-input" rows="1" placeholder="说点什么…"
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
             <button id="send-btn" class="send-btn off" onclick="sendMessage()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8L14 2L8 14L7 9L2 8Z"/></svg>
             </button>
           </div>
-          <div class="hint">🐾 按 Enter 发送 · 点爪印发贴纸</div>
+          <div class="hint">· 按 Enter 发送 · 点爪印发贴纸 ·</div>
         </div>
       </div>
     </div>
@@ -243,7 +216,7 @@
         </div>
         <div id="posts-list"></div>
         <div class="card memory-empty" onclick="showPostForm()" style="cursor:pointer">
-          <div style="font-size:13px;color:var(--textFaint)">+ 写下记忆 🐾</div>
+          <div style="font-size:13px;color:var(--textFaint)">+ 写下记忆 ◈</div>
         </div>
       </div>
     </div>
@@ -290,7 +263,7 @@
         </div>
         <!-- 表情包库 -->
         <div class="card">
-          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">🖼 表情包库</div>
+          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">◈ 表情包库</div>
           <div class="form-group">
             <label>选择贴纸图片</label>
             <input type="file" id="sticker-file-input" accept="image/*" onchange="previewStickerFile()" style="font-size:13px">
@@ -301,7 +274,7 @@
           <div class="form-group">
             <label>标签</label>
             <select id="sticker-tag" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);background:#fff;font-family:inherit;outline:none">
-              <option value="开心">😊 开心</option><option value="难过">😢 难过</option><option value="撒娇">🥺 撒娇</option><option value="日常">🐾 日常</option><option value="生气">😤 生气</option><option value="惊讶">😲 惊讶</option>
+              <option value="开心">◕ 开心</option><option value="难过">◠ 难过</option><option value="撒娇">◡ 撒娇</option><option value="日常">◇ 日常</option><option value="生气">◆ 生气</option><option value="惊讶">⊙ 惊讶</option>
             </select>
           </div>
           <div class="form-group">

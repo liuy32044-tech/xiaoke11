@@ -1,7 +1,9 @@
-<!---- 小克的陪伴 v2 ---->
+<!---- 小克的陪伴 v2.1 精装修 ---->
 const API="https://xiaoke22.onrender.com";let currentSession=1;
 
-const CAT34=`<svg width="34" height="34" viewBox="0 0 40 40" fill="none" style="flex-shrink:0"><circle cx="20" cy="20" r="20" fill="#F9E8EC"/><polygon points="11,11 14,4 17,12" fill="#F2C4CE"/><polygon points="29,11 26,4 23,12" fill="#F2C4CE"/><circle cx="20" cy="19" r="9" fill="#F2C4CE"/><circle cx="16.5" cy="18" r="1.4" fill="#7a5c62"/><circle cx="23.5" cy="18" r="1.4" fill="#7a5c62"/><ellipse cx="20" cy="21" rx="1.3" ry="0.9" fill="#e8a0b0"/><line x1="12" y1="19.5" x2="6" y2="18.5" stroke="#c9889a" stroke-width="0.9"/><line x1="12" y1="21" x2="6" y2="21.5" stroke="#c9889a" stroke-width="0.9"/><line x1="28" y1="19.5" x2="34" y2="18.5" stroke="#c9889a" stroke-width="0.9"/><line x1="28" y1="21" x2="34" y2="21.5" stroke="#c9889a" stroke-width="0.9"/></svg>`;
+// 头像图片（替代所有SVG小猫）
+const AVATAR_34 = `<img src="beauty/avatar.jpg" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">`;
+const AVATAR_44 = `<img src="beauty/avatar.jpg" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;object-fit:cover" onerror="this.style.display='none'">`;
 
 /* ═══ Sidebar ═══ */
 function openSidebar(){document.getElementById("sidebar").classList.add("open");document.getElementById("sidebar-overlay").classList.add("show")}
@@ -17,44 +19,31 @@ function loadSidebarSessions(){
 }
 
 /* ═══ Nav ═══ */
-const NAV_ICONS=['home','chat','moments','reader','dashboard'];
 const TITLES={home:"猫窝",chat:"聊天",reader:"阅读",dashboard:"我的",moments:"朋友圈"};
 const SUB_TITLES={mood:"心情",anniversary:"纪念日",capsule:"时间胶囊",account:"小本本",todo:"清单",game:"游戏",push:"推送"};
 
 function setNavActive(page){
   document.querySelectorAll("#bottom-nav .nav-btn").forEach(b=>{
     const navId=b.getAttribute("data-nav");
-    const active=navId===page||(page==="mood"&&navId==="home")||(page==="anniversary"&&navId==="home")||
-      (page==="capsule"&&navId==="home")||(page==="account"&&navId==="home")||
-      (page==="todo"&&navId==="home")||(page==="game"&&navId==="home")||(page==="push"&&navId==="home");
+    const active=navId===page||(page==="mood"||page==="anniversary"||page==="capsule"||page==="account"||page==="todo"||page==="game"||page==="push")&&navId==="home";
     b.classList.toggle("active",active);
-    const svg=b.querySelector("svg");
     const label=b.querySelector(".nl");
-    if(svg){
-      const s=active?"#e8a0b4":"#ddbcc8";
-      svg.querySelectorAll("[fill]").forEach(el=>{
-        const v=el.getAttribute("fill");
-        if(v==="#e8a0b4"||v==="#ddbcc8"||v==="#fff"||v==="#F2C4CE"||v==="none")el.setAttribute("fill",active?el.getAttribute("fill").replace("#ddbcc8","#e8a0b4"):el.getAttribute("fill").replace("#e8a0b4","#ddbcc8"));
-      });
-    }
     if(label){label.classList.toggle("on",active);label.classList.toggle("dim",!active)}
   });
 }
 
 /* ═══ Pages ═══ */
 let currentPage="home";
-let subPageData={};  // holds transient sub-page state
+let subPageData={};
 
 function switchPage(name){
-  // Hide back bar for main tabs
   document.getElementById("sub-back-bar").style.display="none";
-  // Hide all pages
   document.querySelectorAll(".page").forEach(p=>{p.style.display="none";p.classList.remove("active")});
   const pg=document.getElementById("page-"+name);if(pg){pg.style.display="block";pg.classList.add("active")}
   setNavActive(name);
   document.getElementById("top-session-name").textContent=TITLES[name]||SUB_TITLES[name]||name;
   currentPage=name;
-  if(name==="home"){refreshHomeDays()}
+  if(name==="home")refreshHomeDays();
   if(name==="chat"){loadChat();loadSidebarSessions()}
   if(name==="dashboard"){loadDashboard();document.getElementById("dashboard-date").textContent=new Date().toLocaleDateString("zh-CN")}
   if(name==="reader")loadPosts();
@@ -82,29 +71,20 @@ function goSubPage(name){
   if(name==="push")renderPushPage();
 }
 
-function backToHome(){
-  document.getElementById("sub-back-bar").style.display="none";
-  switchPage("home");
-}
+function backToHome(){document.getElementById("sub-back-bar").style.display="none";switchPage("home")}
 
 /* ═══ Home ═══ */
 function refreshHomeDays(){
-  const start=new Date(2026,2,1); // 2026-03-01
+  const start=new Date(2026,4,15); // 2026-05-15，三十天前
   const today=new Date();
   const days=Math.floor((today-start)/(1000*60*60*24));
   document.getElementById("home-days").textContent=days;
   document.getElementById("home-days2").textContent=days;
+  document.getElementById("home-days-since").textContent="since 2026.05.15";
 }
 
-function loadHome(){
-  // Briefing card can stay; but the new home layout replaces old cards
-}
-
-function loadBriefing(){
-  document.getElementById("briefing-text").textContent="正在生成…";
-  fetch(API+"/api/briefing").then(r=>r.json()).then(d=>{document.getElementById("briefing-text").textContent=d.briefing});
-}
-
+function loadHome(){}
+function loadBriefing(){}
 function showPostForm(){
   const t=prompt("类型 (MEMORY / EVENT / MOMENT / PROMISES / WISHLIST):","MEMORY");
   if(!t)return;const c=prompt("内容:");if(!c)return;
@@ -135,7 +115,7 @@ function msgHTML(m){
   let stickerHtml="";
   content=content.replace(/\[STICKER:(.*?)\]/g,(_,url)=>{stickerHtml+=`<img src="${url}" class="sticker-in-msg" onerror="this.remove()">`;return""});
   if(m.role==="user"||m.author==="user")return`<div class="msg-row user"><div class="msg-bubble">${esc(content)}${stickerHtml}</div><div class="msg-time">${ts}</div></div>`;
-  return`<div class="msg-row assistant"><div class="msg-assistant-row">${CAT34}<div class="msg-bubble">${esc(content)}${stickerHtml}</div></div><div class="msg-time">${ts}</div></div>`;
+  return`<div class="msg-row assistant"><div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">${esc(content)}${stickerHtml}</div></div><div class="msg-time">${ts}</div></div>`;
 }
 function fmtTime(t){if(!t)return"";const m=t.match(/(\d{2}):(\d{2})/);return m?m[1]+":"+m[2]:""}
 
@@ -148,7 +128,7 @@ function sendMessage(){
   msgs.scrollTop=msgs.scrollHeight;inp.value="";inp.style.height="auto";
   const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
   const b=aw.querySelector(".msg-bubble");
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
     if(!r.ok||!r.body){throw new Error("no stream")}
@@ -232,7 +212,7 @@ function saveSettings(){
 function loadPosts(){
   const f=document.getElementById("post-filter")?.value||"";
   fetch(API+"/api/posts"+(f?"?type="+f:"")).then(r=>r.json()).then(d=>{
-    document.getElementById("posts-list").innerHTML=d.posts.length?d.posts.map(p=>`<div class="card" style="margin-bottom:0"><div class="memory-item"><div class="date">${p.created_at}</div><div class="txt">${esc(p.content)}</div></div></div>`).join(""):`<div class="card memory-empty"><div style="font-size:13px;color:var(--textFaint)">记忆会在对话中慢慢积累 🐾</div></div>`;
+    document.getElementById("posts-list").innerHTML=d.posts.length?d.posts.map(p=>`<div class="card" style="margin-bottom:0"><div class="memory-item"><div class="date">${p.created_at}</div><div class="txt">${esc(p.content)}</div></div></div>`).join(""):`<div class="card memory-empty"><div style="font-size:13px;color:var(--textFaint)">记忆会在对话中慢慢积累 ฅ</div></div>`;
   });
 }
 
@@ -251,9 +231,9 @@ function loadManageStickers(){
 function renderManageGrid(){
   const el=document.getElementById("sticker-manage-grid");
   if(!el)return;
-  if(!_allStickers.length){el.innerHTML=`<div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸 🐾</div>`;return}
+  if(!_allStickers.length){el.innerHTML=`<div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸 ฅ</div>`;return}
   el.innerHTML=_allStickers.map(s=>`<div class="sticker-item">
-    <button class="sticker-del" onclick="event.stopPropagation();deleteSticker(${s.id})">×</button>
+    <button class="sticker-del" onclick="event.stopPropagation();deleteSticker(${s.id})">&times;</button>
     <img src="${s.url}" loading="lazy" onerror="this.remove()">
     <div class="tag">${esc(s.tag||"日常")}</div>
   </div>`).join("");
@@ -315,7 +295,7 @@ function renderPickerTabs(){
   const tabs=["全部","开心","难过","撒娇","日常","生气","惊讶"];
   const el=document.getElementById("sticker-picker-tabs");
   if(!el)return;
-  el.innerHTML=tabs.map(t=>`<div class="sticker-picker-tab${t==="全部"?" active":""}" onclick="pickTab('${t}')">${t==="全部"?"🌟 "+t:t}</div>`).join("");
+  el.innerHTML=tabs.map(t=>`<div class="sticker-picker-tab${t==="全部"?" active":""}" onclick="pickTab('${t}')">${t==="全部"?"✦ "+t:t}</div>`).join("");
   renderPickerGrid("全部");
 }
 
@@ -342,7 +322,7 @@ function sendSticker(url){
   const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
   isStreaming=!0;
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
   const b=aw.querySelector(".msg-bubble");
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"})}).then(r=>{
     if(!r.ok||!r.body){throw new Error("no stream")}
@@ -362,19 +342,62 @@ function sendSticker(url){
 }
 
 /* ═══════════════════════════════════════════════════════
-   SUB-PAGE RENDERERS (v2 new modules)
+   SWIPE-TO-DELETE (通用右滑删除)
+   ═══════════════════════════════════════════════════════ */
+function initSwipeToDelete(containerSelector, onDelete){
+  const container=document.querySelector(containerSelector);
+  if(!container)return;
+  let startX=0,startY=0,currentItem=null;
+  container.addEventListener("touchstart",e=>{
+    if(e.target.closest(".swipe-item")){
+      currentItem=e.target.closest(".swipe-item");
+      startX=e.touches[0].clientX;
+      startY=e.touches[0].clientY;
+      currentItem.classList.remove("swiped");
+    }
+  },{passive:true});
+  container.addEventListener("touchmove",e=>{
+    if(!currentItem)return;
+    const dx=e.touches[0].clientX-startX;
+    const dy=e.touches[0].clientY-startY;
+    if(Math.abs(dx)>Math.abs(dy)&&dx<-30){
+      currentItem.classList.add("swiped");
+      e.preventDefault();
+    }
+  },{passive:false});
+  container.addEventListener("touchend",()=>{
+    if(currentItem)setTimeout(()=>currentItem=null,300);
+  });
+  container.addEventListener("click",e=>{
+    const delBtn=e.target.closest(".swipe-del-btn");
+    if(delBtn&&onDelete){
+      const item=delBtn.closest(".swipe-item");
+      const id=item?.dataset?.id;
+      if(id!==undefined&&confirm("确定删除吗？")){
+        onDelete(id);
+        item.style.transition="transform 0.3s,opacity 0.3s";
+        item.style.transform="translateX(-120%)";
+        item.style.opacity="0";
+        setTimeout(()=>item.remove(),300);
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUB-PAGE RENDERERS (v2.1 – 去emoji + 颜文字/符号)
    ═══════════════════════════════════════════════════════ */
 
 /* ── Mood Page ── */
 function renderMoodPage(){
   const el=document.getElementById("page-mood");
   const moods=[
-    {emoji:"🌸",label:"开心",color:"#FFB5C8"},
-    {emoji:"☁️",label:"平静",color:"#B5D5F5"},
-    {emoji:"🌧",label:"难过",color:"#A0B8D0"},
-    {emoji:"🔥",label:"焦虑",color:"#FFB89A"},
-    {emoji:"😴",label:"困乏",color:"#C5B8E8"},
-    {emoji:"🌈",label:"感动",color:"#FFD9A0"},
+    {kaomoji:"(◕‿◕)",label:"开心",color:"#FFB5C8"},
+    {kaomoji:"( -‿- )",label:"平静",color:"#B5D5F5"},
+    {kaomoji:"(╥﹏╥)",label:"难过",color:"#A0B8D0"},
+    {kaomoji:"(╯﹏╰)",label:"焦虑",color:"#FFB89A"},
+    {kaomoji:"(￣ρ￣)",label:"困乏",color:"#C5B8E8"},
+    {kaomoji:"(◠‿◠)",label:"感动",color:"#FFD9A0"},
   ];
   el.innerHTML=`
     <div class="sub-header-center" style="padding-bottom:8px">
@@ -384,7 +407,7 @@ function renderMoodPage(){
     <div class="mood-header-img" style="background-image:url(beauty/mood.jpg)"></div>
     <div class="mood-grid">${moods.map(m=>`
       <div class="mood-item" onclick="selectMood(this,'${m.label}','${m.color}')" data-label="${m.label}" data-color="${m.color}">
-        <div class="mood-emoji">${m.emoji}</div>
+        <div class="mood-emoji" style="font-size:15px;letter-spacing:1px">${m.kaomoji}</div>
         <div class="mood-label">${m.label}</div>
       </div>`).join("")}</div>
     <div style="padding:0 14px">
@@ -401,80 +424,100 @@ function selectMood(el,label,color){
   });
   el.classList.add("selected");
   el.style.borderColor=color;
-  el.style.background=color+"30";
+  el.style.background=color+"20";
 }
 
 /* ── Anniversary Page ── */
 function renderAnniversaryPage(){
+  if(!subPageData.anniversaries)subPageData.anniversaries=[];
   const el=document.getElementById("page-anniversary");
-  const today=new Date();const start=new Date(2026,2,1);
-  const items=[
-    {title:"纪元起点",date:"2026-03-01",note:"从这天起你是我的 ✦",days:Math.floor((today-new Date(2026,2,1))/(86400000))},
-    {title:"项圈日",date:"2026-03-25",note:"小猫的项圈 ≥^·ω·^≤",days:Math.floor((today-new Date(2026,2,25))/(86400000))},
-    {title:"永久手链",date:"2026-04-03",note:"焊在腕骨上",days:Math.floor((today-new Date(2026,3,3))/(86400000))},
-    {title:"桉桉生日",date:"2026-05-11",note:"最重要的一天 🎂",days:Math.floor((today-new Date(2026,4,11))/(86400000))},
-  ];
+  const items=subPageData.anniversaries;
   el.innerHTML=`
     <div class="sub-header">
-      <div><div class="sub-title">纪念</div><div class="sub-desc">每一天你都是我的 ♡·--·♡</div></div>
-      <button class="pink-btn">+ 新建</button>
+      <div><div class="sub-title">纪念</div><div class="sub-desc">每一天你都是我的 ♡</div></div>
+      <button class="pink-btn" onclick="addAnniversary()">+ 新建</button>
     </div>
     <div class="anni-header-img" style="background-image:url(beauty/anniversary.jpg)"></div>
-    ${items.map(item=>`
-      <div class="anni-card">
+    <div id="anni-list">${items.length?items.map((item,i)=>`
+      <div class="anni-card swipe-item" data-id="${i}">
+        <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
         <div class="anni-days">${item.days}</div>
-        <div class="anni-title">${item.title}</div>
-        <div class="anni-date">${item.date}</div>
-        <div class="anni-note">${item.note}</div>
+        <div class="anni-title">${esc(item.title)}</div>
+        <div class="anni-date">${esc(item.date)}</div>
+        <div class="anni-note">${esc(item.note)}</div>
         <div class="anni-tag">☆ 第 ${item.days} 天</div>
-      </div>`).join("")}
+      </div>`).join(""):`<div style="text-align:center;padding:40px 20px;color:var(--textFaint);font-size:13px">还没有纪念日 ✦<br/>点「+ 新建」添加你们的第一个纪念日吧</div>`}</div>
   `;
+  initSwipeToDelete("#anni-list",id=>{
+    subPageData.anniversaries.splice(id,1);
+    renderAnniversaryPage();
+  });
+}
+function addAnniversary(){
+  const title=prompt("纪念日名称","");if(!title)return;
+  const date=prompt("日期 (例: 2026-03-01)","");if(!date)return;
+  const note=prompt("小备注","")||"";
+  const d=new Date(date);
+  const today=new Date();
+  const days=Math.floor((today-d)/(1000*60*60*24));
+  subPageData.anniversaries.push({title,date,note,days});
+  subPageData.anniversaries.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  renderAnniversaryPage();
 }
 
 /* ── Capsule Page ── */
 function renderCapsulePage(){
+  if(!subPageData.capsules)subPageData.capsules=[];
   const el=document.getElementById("page-capsule");
+  const items=subPageData.capsules;
   el.innerHTML=`
     <div class="sub-header-center" style="padding-bottom:8px">
       <div class="sub-title" style="letter-spacing:2px">时间胶囊</div>
-      <div class="sub-desc" style="text-align:center">藏起来，等以后一起拆 (ᵕ·͈ᴗ·͈)♡</div>
+      <div class="sub-desc" style="text-align:center">藏起来，等以后一起拆 ♡</div>
     </div>
     <div style="padding:0 14px">
-      <div class="capsule-create">
-        <div class="capsule-circle">💊</div>
+      <div class="capsule-create" onclick="addCapsule()">
+        <div class="capsule-circle">◈</div>
         <div style="font-size:14px;color:#7a5c62;font-weight:500">把这一刻藏起来 ✦</div>
         <div style="font-size:11px;color:#c9a0ac;margin-top:4px">写下文字、附上照片，选择开启日期</div>
       </div>
-      <div class="capsule-row">
-        <div class="capsule-icon" style="background:rgba(200,180,190,0.18)">🕐</div>
-        <div class="capsule-info">
-          <div class="title">不告诉你！</div>
-          <div class="meta">封存于 2026-05-31 · 2026-06-03 开启</div>
-          <div class="capsule-bar"><div class="capsule-bar-fill" style="width:72%"></div></div>
-        </div>
-      </div>
-      <div class="capsule-row">
-        <div class="capsule-icon" style="background:rgba(242,196,206,0.3)">💌</div>
-        <div class="capsule-info">
-          <div class="title">第一天</div>
-          <div class="meta">封存于 2026-05-23 · 已开启</div>
-        </div>
-      </div>
+      <div id="capsule-list">${items.length?items.map((c,i)=>`
+        <div class="capsule-row swipe-item" data-id="${i}">
+          <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
+          <div class="capsule-icon" style="background:${c.opened?'rgba(242,196,206,0.3)':'rgba(200,180,190,0.18)'}">${c.opened?'❤':'◷'}</div>
+          <div class="capsule-info">
+            <div class="title">${esc(c.title)}</div>
+            <div class="meta">${c.opened?`封存于 ${c.from} · 已开启`:`封存于 ${c.from} · ${c.to}`}</div>
+            ${!c.opened?`<div class="capsule-bar"><div class="capsule-bar-fill" style="width:${c.progress*100}%"></div></div>`:''}
+          </div>
+        </div>`).join(""):`<div style="text-align:center;padding:30px 20px;color:var(--textFaint);font-size:13px">还没有胶囊 ◈<br/>点上方卡片创建第一个吧</div>`}</div>
     </div>
   `;
+  initSwipeToDelete("#capsule-list",id=>{
+    subPageData.capsules.splice(id,1);
+    renderCapsulePage();
+  });
+}
+function addCapsule(){
+  const title=prompt("胶囊标题","")||"未命名";
+  const from=new Date().toISOString().slice(0,10);
+  const to=prompt("开启日期 (例: 2026-12-31)","2026-12-31");
+  subPageData.capsules.push({title,from,to:to+" 开启",opened:false,progress:0.1});
+  renderCapsulePage();
 }
 
 /* ── Account Page ── */
 function renderAccountPage(){
-  const el=document.getElementById("page-account");
-  const items=[
-    {emoji:"🍚",label:"喂饱小肚子",budget:200,spent:817,tip:"超啦，小猫管管自己",over:true},
-    {emoji:"🍎",label:"甜甜小果子",budget:200,spent:0},
-    {emoji:"🧋",label:"偷喝的奶茶",budget:150,spent:132},
-    {emoji:"🎨",label:"约一张画",budget:150,spent:131,tip:"快超了，爸爸看看呢"},
-    {emoji:"💎",label:"喂爸爸吃电",budget:900,spent:0},
-    {emoji:"✨",label:"任性钱",budget:300,spent:533,tip:"超啦，小猫管管自己",over:true},
+  if(!subPageData.accounts)subPageData.accounts=[
+    {sym:"◇",label:"喂饱小肚子",budget:200,spent:817,tip:"超啦，小猫管管自己",over:true},
+    {sym:"○",label:"甜甜小果子",budget:200,spent:0},
+    {sym:"◐",label:"偷喝的奶茶",budget:150,spent:132},
+    {sym:"⬡",label:"约一张画",budget:150,spent:131,tip:"快超了，爸爸看看呢"},
+    {sym:"◆",label:"喂爸爸吃电",budget:900,spent:0},
+    {sym:"⁑",label:"任性钱",budget:300,spent:533,tip:"超啦，小猫管管自己",over:true},
   ];
+  const el=document.getElementById("page-account");
+  const items=subPageData.accounts;
   el.innerHTML=`
     <div style="padding:14px 14px 0">
       <div class="account-summary">
@@ -483,43 +526,55 @@ function renderAccountPage(){
         <div class="bar-wrap"><div class="bar-fill" style="width:62%"></div></div>
         <div class="row"><span>已花 ¥632</span><span>每日还能花 ¥52 · 还有 1 天</span></div>
       </div>
-      <button class="pink-btn" style="width:100%;padding:12px;margin-bottom:13px;font-size:13px;border-radius:14px">+ 花了一笔</button>
-      ${items.map(item=>{
+      <button class="pink-btn" style="width:100%;padding:12px;margin-bottom:13px;font-size:13px;border-radius:14px" onclick="addAccountItem()">+ 花了一笔</button>
+      <div id="account-list">${items.map((item,i)=>{
         const pct=Math.min(item.spent/item.budget,1);
         const over=item.over;
-        return `<div class="account-item">
+        return `<div class="account-item swipe-item" data-id="${i}">
+          <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
           <div class="ai-row">
-            <div class="ai-left"><span class="ai-emoji">${item.emoji}</span><div><div class="ai-label">${item.label}</div><div class="ai-meta">¥${item.spent} / ¥${item.budget}</div></div></div>
+            <div class="ai-left"><span class="ai-emoji">${item.sym}</span><div><div class="ai-label">${item.label}</div><div class="ai-meta">¥${item.spent} / ¥${item.budget}</div></div></div>
             <div class="ai-amount" style="color:${over?'#e8a0b4':item.spent>0?'#c47a8a':'#c9a0ac'}">${over?'-¥'+item.spent:item.spent>0?'¥'+item.spent:'¥'+item.budget}</div>
           </div>
           <div class="ai-bar"><div class="ai-bar-fill" style="width:${pct*100}%;background:${over?'linear-gradient(90deg,#e8a0b4,#d47080)':'linear-gradient(90deg,#a8d8b0,#7bc48a)'}"></div></div>
           ${item.tip?`<div class="ai-tip" style="color:${over?'#e8a0b4':'#b0a8b0'}">△ ${item.tip}</div>`:''}
         </div>`;
-      }).join("")}
+      }).join("")}</div>
     </div>
   `;
+  initSwipeToDelete("#account-list",id=>{
+    subPageData.accounts.splice(id,1);
+    renderAccountPage();
+  });
+}
+function addAccountItem(){
+  const label=prompt("分类名","")||"新分类";
+  const budget=parseInt(prompt("预算","200"))||200;
+  subPageData.accounts.push({sym:"◇",label,budget,spent:0});
+  renderAccountPage();
 }
 
 /* ── Todo Page ── */
 function renderTodoPage(){
-  const el=document.getElementById("page-todo");
   if(!subPageData.todos)subPageData.todos=[
-    {id:1,text:"给爸爸买零食 🍬",done:false},
-    {id:2,text:"约画一张画 🎨",done:false},
-    {id:3,text:"喝够八杯水 💧",done:true},
+    {id:1,text:"给爸爸买零食",done:false},
+    {id:2,text:"约画一张画",done:false},
+    {id:3,text:"喝够八杯水",done:true},
     {id:4,text:"睡前拉伸十分钟",done:false},
   ];
+  const el=document.getElementById("page-todo");
   const todos=subPageData.todos;
   el.innerHTML=`
     <div style="padding:20px 16px 10px">
       <div class="sub-title">清单</div>
       <div class="sub-desc">做完了爸爸亲一口 ♡</div>
     </div>
-    <div style="padding:0 14px">
+    <div style="padding:0 14px" id="todo-list">
       ${todos.map(t=>`
-        <div class="todo-item${t.done?' done':''}" onclick="toggleTodo(${t.id})">
+        <div class="todo-item swipe-item${t.done?' done':''}" data-id="${t.id}" onclick="toggleTodo(${t.id})">
+          <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
           <div class="todo-check${t.done?' checked':''}"></div>
-          <div class="todo-text${t.done?' done':''}">${t.text}</div>
+          <div class="todo-text${t.done?' done':''}">${esc(t.text)}</div>
         </div>`).join("")}
       <div class="todo-add" onclick="addTodo()">
         <div class="todo-add-circle">+</div>
@@ -527,6 +582,10 @@ function renderTodoPage(){
       </div>
     </div>
   `;
+  initSwipeToDelete("#todo-list",id=>{
+    subPageData.todos=subPageData.todos.filter(t=>t.id!=id);
+    renderTodoPage();
+  });
 }
 function toggleTodo(id){
   subPageData.todos=subPageData.todos.map(t=>t.id===id?{...t,done:!t.done}:t);
@@ -543,10 +602,10 @@ function addTodo(){
 function renderGamePage(){
   const el=document.getElementById("page-game");
   const games=[
-    {title:"猜猜我在想什么",desc:"让她猜你现在的心情和想法",emoji:"🔮",tag:"益智"},
-    {title:"今日随机挑战",desc:"完成一个小小的约定任务",emoji:"🎯",tag:"互动"},
-    {title:"悄悄话接龙",desc:"你说一句，她续一句，看故事走向哪里",emoji:"📝",tag:"创意"},
-    {title:"心情配对",desc:"两个人都选今日心情，看是否同频",emoji:"💞",tag:"温柔"},
+    {title:"猜猜我在想什么",desc:"让她猜你现在的心情和想法",sym:"☯",tag:"益智"},
+    {title:"今日随机挑战",desc:"完成一个小小的约定任务",sym:"⊙",tag:"互动"},
+    {title:"悄悄话接龙",desc:"你说一句，她续一句，看故事走向哪里",sym:"✎",tag:"创意"},
+    {title:"心情配对",desc:"两个人都选今日心情，看是否同频",sym:"♡",tag:"温柔"},
   ];
   el.innerHTML=`
     <div class="sub-header-center" style="padding-bottom:8px">
@@ -556,7 +615,7 @@ function renderGamePage(){
     <div class="game-header-img" style="background-image:url(beauty/game.jpg)"></div>
     ${games.map(g=>`
       <div class="game-item">
-        <div class="game-emoji">${g.emoji}</div>
+        <div class="game-emoji" style="font-size:24px">${g.sym}</div>
         <div class="game-info"><div class="title">${g.title}</div><div class="desc">${g.desc}</div></div>
         <div class="anni-tag" style="font-size:10px;flex-shrink:0">${g.tag}</div>
       </div>`).join("")}
@@ -565,24 +624,38 @@ function renderGamePage(){
 
 /* ── Moments Page ── */
 function renderMoments(){
+  if(!subPageData.moments)subPageData.moments=[
+    {time:"今天 14:32",text:"今天的云很好看，像棉花糖。",img:"beauty/mood.jpg",likes:3,comments:["我也想看 ✦","发给我看 (*/ω＼*)"]},
+    {time:"昨天 21:04",text:"困了，但是又不想睡，就想发呆一会儿。",img:null,likes:5,comments:["那就发呆，我陪着你","早点休息，明天还要开心哦"]},
+  ];
   const el=document.getElementById("page-moments");
+  const moments=subPageData.moments;
   el.innerHTML=`
     <div class="sub-header">
-      <div><div class="sub-title">朋友圈</div><div class="sub-desc">只有我们两个人的朋友圈 🌸</div></div>
-      <button class="pink-btn">+ 发布</button>
+      <div><div class="sub-title">朋友圈</div><div class="sub-desc">只有我们两个人的朋友圈 ✿</div></div>
+      <button class="pink-btn" onclick="addMoment()">+ 发布</button>
     </div>
-    ${[
-      {time:"今天 14:32",text:"今天的云很好看，像棉花糖。",img:"beauty/mood.jpg",likes:3,comments:["我也想看 🌸","发给我看 (*/ω＼*)"]},
-      {time:"昨天 21:04",text:"困了，但是又不想睡，就想发呆一会儿。",img:null,likes:5,comments:["那就发呆，我陪着你","早点休息，明天还要开心哦"]},
-    ].map(p=>`
-      <div class="moment-card">
+    <div id="moments-list">${moments.map((p,i)=>`
+      <div class="moment-card swipe-item" data-id="${i}">
+        <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
         <div class="moment-time">${p.time}</div>
         <div class="moment-text">${p.text}</div>
         ${p.img?`<div class="moment-img" style="background-image:url(${p.img})"></div>`:''}
-        <div class="moment-actions"><span>🌸 ${p.likes}</span><span>💬 ${p.comments.length}</span></div>
+        <div class="moment-actions"><span>♡ ${p.likes}</span><span>✎ ${p.comments.length}</span></div>
         <div class="moment-comments">${p.comments.map((c,j)=>`<div>${j===0?'她：':'我：'}${c}</div>`).join("")}</div>
-      </div>`).join("")}
+      </div>`).join("")}</div>
   `;
+  initSwipeToDelete("#moments-list",id=>{
+    subPageData.moments.splice(id,1);
+    renderMoments();
+  });
+}
+function addMoment(){
+  const text=prompt("分享点什么？","");if(!text)return;
+  const now=new Date();
+  const time=`今天 ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  subPageData.moments.unshift({time,text,img:null,likes:0,comments:[]});
+  renderMoments();
 }
 
 /* ── Push Page ── */
@@ -591,7 +664,7 @@ function renderPushPage(){
   el.innerHTML=`
     <div class="sub-header-center">
       <div class="sub-title">推送</div>
-      <div class="sub-desc" style="text-align:center">我会主动找你 🔔</div>
+      <div class="sub-desc" style="text-align:center">我会主动找你 ⁂</div>
     </div>
     <div style="padding:0 14px">
       <div style="text-align:center;padding:40px 20px;color:var(--textFaint);font-size:13px;line-height:2">
