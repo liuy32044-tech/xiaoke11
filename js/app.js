@@ -129,7 +129,7 @@ function sendMessage(){
   const b=document.getElementById(placeholderId);if(!b)return;
   const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},5000);
   const abortController=new AbortController();
-  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="太久没回…再试一次？";finish("")},90000);
+  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="还在等…后端可能还在启动中";finish("")},120000);
   let firstWord=false;
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
     if(!r.ok||!r.body){throw new Error("status "+r.status)}
@@ -476,8 +476,22 @@ function submitMoment(){
   const imgSrc=previewImg?previewImg.src:null;
   if(!text&&!imgSrc)return;
   const now=new Date(),time='今天 '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
-  subPageData.moments.unshift({time,text:text||"",img:imgSrc,likes:0,comments:[]});
+  // 先发布，显示"她正在看…"
+  subPageData.moments.unshift({time,text:text||"",img:imgSrc,likes:0,comments:["正在看…"]});
   closeMomentDialog();saveData();renderMoments();
+  // 调AI获取评论
+  fetch(API+"/api/moments/comment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text||"",img:imgSrc?true:false})})
+    .then(r=>r.json()).then(d=>{
+      if(subPageData.moments.length>0&&subPageData.moments[0].comments[0]==="正在看…"){
+        subPageData.moments[0].comments[0]=d.comment||"宝宝发的这个我喜欢 ✿";
+        saveData();renderMoments();
+      }
+    }).catch(()=>{
+      if(subPageData.moments.length>0&&subPageData.moments[0].comments[0]==="正在看…"){
+        subPageData.moments[0].comments[0]="我看看… ✿";
+        saveData();renderMoments();
+      }
+    });
 }
 function likeMoment(i){subPageData.moments[i].likes++;saveData();renderMoments()}
 function commentMoment(i){const comment=prompt("评论：","");if(!comment)return;subPageData.moments[i].comments.push(comment);saveData();renderMoments()}

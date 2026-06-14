@@ -280,7 +280,7 @@ body{
 #page-chat::before,#page-reader::before,#page-mood::before,#page-anniversary::before,
 #page-capsule::before,#page-account::before,#page-todo::before,#page-game::before,
 #page-push::before,#page-moments::before{
-  content:"";position:fixed;inset:0;background-image:url(beauty/wallpaper.jpg);
+  content:"";position:fixed;inset:0;background-image:url(../beauty/wallpaper.jpg);
   background-size:cover;background-position:center;opacity:0.14;pointer-events:none;z-index:0
 }
 
@@ -376,7 +376,7 @@ body{
 /* 开屏背景融合图 */
 #splash::before{
   content:"";position:absolute;inset:0;
-  background-image:url(beauty/splash-bg.jpg);
+  background-image:url(../beauty/splash-bg.jpg);
   background-size:cover;background-position:center;
   opacity:0.22;z-index:0;pointer-events:none
 }
