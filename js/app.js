@@ -344,6 +344,12 @@ function sendSticker(url){
 /* ═══════════════════════════════════════════════════════
    SWIPE-TO-DELETE (通用右滑删除)
    ═══════════════════════════════════════════════════════ */
+/* ═══ Data persistence ═══ */
+function saveData(){try{localStorage.setItem("xiaoke_subpage",JSON.stringify(subPageData))}catch(e){}}
+function loadData(){try{const d=localStorage.getItem("xiaoke_subpage");if(d){const p=JSON.parse(d);subPageData=p}}}catch(e){}
+loadData();
+
+/* ═══ Swipe ═══ */
 function initSwipeToDelete(containerSelector, onDelete){
   const container=document.querySelector(containerSelector);
   if(!container)return;
@@ -411,11 +417,19 @@ function renderMoodPage(){
         <div class="mood-label">${m.label}</div>
       </div>`).join("")}</div>
     <div style="padding:0 14px">
-      <textarea class="mood-textarea" placeholder="记录一下此刻的感受..."></textarea>
-      <button class="pink-btn mood-save-btn">保存今天的心情</button>
+      <textarea id="mood-note" class="mood-textarea" placeholder="记录一下此刻的感受..."></textarea>
+      <button class="pink-btn mood-save-btn" onclick="saveMood()">保存今天的心情</button>
     </div>
+    ${(subPageData.moodHistory||[]).length?`
+    <div style="padding:16px 14px 0">
+      <div style="font-size:12px;color:var(--textFaint);letter-spacing:2px;margin-bottom:8px">━ 心情记录 ━</div>
+      ${subPageData.moodHistory.slice(0,10).map(h=>`
+        <div class="capsule-row" style="margin:0 0 8px"><div class="capsule-icon" style="background:rgba(242,196,206,0.25);font-size:14px;letter-spacing:1px">${h.kaomoji}</div><div class="capsule-info"><div class="title">${h.label} · ${h.date}</div><div class="meta">${esc(h.note||'')}</div></div></div>
+      `).join("")}
+    </div>`:''}
   `;
 }
+let selectedMood=null;
 function selectMood(el,label,color){
   document.querySelectorAll(".mood-item").forEach(m=>{
     m.classList.remove("selected");
@@ -425,6 +439,20 @@ function selectMood(el,label,color){
   el.classList.add("selected");
   el.style.borderColor=color;
   el.style.background=color+"20";
+  selectedMood=label;
+}
+function saveMood(){
+  if(!selectedMood)return alert("请先选择一个心情～");
+  if(!subPageData.moodHistory)subPageData.moodHistory=[];
+  const moods=[{label:"开心",kaomoji:"(◕‿◕)"},{label:"平静",kaomoji:"( -‿- )"},{label:"难过",kaomoji:"(╥﹏╥)"},{label:"焦虑",kaomoji:"(╯﹏╰)"},{label:"困乏",kaomoji:"(￣ρ￣)"},{label:"感动",kaomoji:"(◠‿◠)"}];
+  const m=moods.find(x=>x.label===selectedMood)||moods[0];
+  const note=document.getElementById("mood-note")?.value||"";
+  const d=new Date();
+  const date=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+  subPageData.moodHistory.unshift({label:m.label,kaomoji:m.kaomoji,note,date});
+  selectedMood=null;
+  saveData();
+  renderMoodPage();
 }
 
 /* ── Anniversary Page ── */
@@ -450,6 +478,7 @@ function renderAnniversaryPage(){
   `;
   initSwipeToDelete("#anni-list",id=>{
     subPageData.anniversaries.splice(id,1);
+    saveData();
     renderAnniversaryPage();
   });
 }
@@ -462,6 +491,7 @@ function addAnniversary(){
   const days=Math.floor((today-d)/(1000*60*60*24));
   subPageData.anniversaries.push({title,date,note,days});
   subPageData.anniversaries.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  saveData();
   renderAnniversaryPage();
 }
 
@@ -495,6 +525,7 @@ function renderCapsulePage(){
   `;
   initSwipeToDelete("#capsule-list",id=>{
     subPageData.capsules.splice(id,1);
+    saveData();
     renderCapsulePage();
   });
 }
@@ -503,35 +534,43 @@ function addCapsule(){
   const from=new Date().toISOString().slice(0,10);
   const to=prompt("开启日期 (例: 2026-12-31)","2026-12-31");
   subPageData.capsules.push({title,from,to:to+" 开启",opened:false,progress:0.1});
+  saveData();
   renderCapsulePage();
 }
 
 /* ── Account Page ── */
 function renderAccountPage(){
   if(!subPageData.accounts)subPageData.accounts=[
-    {sym:"◇",label:"喂饱小肚子",budget:200,spent:817,tip:"超啦，小猫管管自己",over:true},
+    {sym:"◇",label:"喂饱小肚子",budget:200,spent:82,tip:"还剩不少，继续保持～"},
     {sym:"○",label:"甜甜小果子",budget:200,spent:0},
-    {sym:"◐",label:"偷喝的奶茶",budget:150,spent:132},
-    {sym:"⬡",label:"约一张画",budget:150,spent:131,tip:"快超了，爸爸看看呢"},
-    {sym:"◆",label:"喂爸爸吃电",budget:900,spent:0},
+    {sym:"◐",label:"偷喝的奶茶",budget:150,spent:132,tip:"快超了，宝宝看看呢"},
+    {sym:"⬡",label:"约一张画",budget:150,spent:131,tip:"快超了，宝宝看看呢"},
+    {sym:"◆",label:"喂宝宝吃电",budget:900,spent:0},
     {sym:"⁑",label:"任性钱",budget:300,spent:533,tip:"超啦，小猫管管自己",over:true},
   ];
   const el=document.getElementById("page-account");
   const items=subPageData.accounts;
+  const totalBudget=items.reduce((s,i)=>s+i.budget,0);
+  const totalSpent=items.reduce((s,i)=>s+i.spent,0);
+  const remaining=totalBudget-totalSpent;
+  const pctTotal=Math.min(totalSpent/totalBudget,1);
+  const now=new Date();const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const daysLeft=daysInMonth-now.getDate();
+  const dailyLeft=daysLeft>0?Math.floor(remaining/daysLeft):remaining;
   el.innerHTML=`
     <div style="padding:14px 14px 0">
       <div class="account-summary">
-        <div class="label">2026-06 · 本月剩余</div>
-        <div class="amount">¥ 368</div>
-        <div class="bar-wrap"><div class="bar-fill" style="width:62%"></div></div>
-        <div class="row"><span>已花 ¥632</span><span>每日还能花 ¥52 · 还有 1 天</span></div>
+        <div class="label">${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')} · 本月剩余</div>
+        <div class="amount">¥ ${remaining}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pctTotal*100}%"></div></div>
+        <div class="row"><span>已花 ¥${totalSpent}</span><span>每日还能花 ¥${dailyLeft} · 还有 ${daysLeft} 天</span></div>
       </div>
-      <button class="pink-btn" style="width:100%;padding:12px;margin-bottom:13px;font-size:13px;border-radius:14px" onclick="addAccountItem()">+ 花了一笔</button>
+      <button class="pink-btn" style="width:100%;padding:12px;margin-bottom:13px;font-size:13px;border-radius:14px" onclick="spendMoney()">+ 花了一笔</button>
       <div id="account-list">${items.map((item,i)=>{
-        const pct=Math.min(item.spent/item.budget,1);
-        const over=item.over;
-        return `<div class="account-item swipe-item" data-id="${i}">
-          <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
+        const pct=item.budget>0?Math.min(item.spent/item.budget,1):0;
+        const over=item.spent>item.budget;
+        return `<div class="account-item swipe-item" data-id="${i}" onclick="spendOnItem(${i})">
+          <button class="swipe-del-btn" onclick="event.stopPropagation();deleteAccountItem(${i})">删除</button>
           <div class="ai-row">
             <div class="ai-left"><span class="ai-emoji">${item.sym}</span><div><div class="ai-label">${item.label}</div><div class="ai-meta">¥${item.spent} / ¥${item.budget}</div></div></div>
             <div class="ai-amount" style="color:${over?'#e8a0b4':item.spent>0?'#c47a8a':'#c9a0ac'}">${over?'-¥'+item.spent:item.spent>0?'¥'+item.spent:'¥'+item.budget}</div>
@@ -542,22 +581,32 @@ function renderAccountPage(){
       }).join("")}</div>
     </div>
   `;
-  initSwipeToDelete("#account-list",id=>{
-    subPageData.accounts.splice(id,1);
-    renderAccountPage();
-  });
 }
-function addAccountItem(){
-  const label=prompt("分类名","")||"新分类";
-  const budget=parseInt(prompt("预算","200"))||200;
-  subPageData.accounts.push({sym:"◇",label,budget,spent:0});
-  renderAccountPage();
+function spendOnItem(i){
+  const item=subPageData.accounts[i];
+  const amount=parseInt(prompt(`${item.label}\n花了多少钱？`,""));
+  if(!amount||amount<=0)return;
+  item.spent+=amount;
+  if(item.spent>item.budget){item.tip="超啦，小猫管管自己";item.over=true}
+  else if(item.spent>=item.budget*0.9)item.tip="快超了，宝宝看看呢";
+  saveData();renderAccountPage();
+}
+function spendMoney(){
+  const options=subPageData.accounts.map((a,i)=>`${i}: ${a.label}`).join("\n");
+  const idx=parseInt(prompt("选一个分类：\n"+options,"0"));
+  if(isNaN(idx)||idx<0||idx>=subPageData.accounts.length)return;
+  spendOnItem(idx);
+}
+function deleteAccountItem(i){
+  if(!confirm("确定删除「"+subPageData.accounts[i].label+"」？"))return;
+  subPageData.accounts.splice(i,1);
+  saveData();renderAccountPage();
 }
 
 /* ── Todo Page ── */
 function renderTodoPage(){
   if(!subPageData.todos)subPageData.todos=[
-    {id:1,text:"给爸爸买零食",done:false},
+    {id:1,text:"给宝宝买零食",done:false},
     {id:2,text:"约画一张画",done:false},
     {id:3,text:"喝够八杯水",done:true},
     {id:4,text:"睡前拉伸十分钟",done:false},
@@ -567,7 +616,7 @@ function renderTodoPage(){
   el.innerHTML=`
     <div style="padding:20px 16px 10px">
       <div class="sub-title">清单</div>
-      <div class="sub-desc">做完了爸爸亲一口 ♡</div>
+      <div class="sub-desc">做完了亲一口 ♡</div>
     </div>
     <div style="padding:0 14px" id="todo-list">
       ${todos.map(t=>`
@@ -584,28 +633,32 @@ function renderTodoPage(){
   `;
   initSwipeToDelete("#todo-list",id=>{
     subPageData.todos=subPageData.todos.filter(t=>t.id!=id);
+    saveData();
     renderTodoPage();
   });
 }
 function toggleTodo(id){
   subPageData.todos=subPageData.todos.map(t=>t.id===id?{...t,done:!t.done}:t);
+  saveData();
   renderTodoPage();
 }
 function addTodo(){
   const text=prompt("新任务？");
   if(!text)return;
   subPageData.todos.push({id:Date.now(),text,done:false});
+  saveData();
   renderTodoPage();
 }
 
 /* ── Game Page ── */
+let gameActive=null;
 function renderGamePage(){
   const el=document.getElementById("page-game");
   const games=[
-    {title:"猜猜我在想什么",desc:"让她猜你现在的心情和想法",sym:"☯",tag:"益智"},
-    {title:"今日随机挑战",desc:"完成一个小小的约定任务",sym:"⊙",tag:"互动"},
-    {title:"悄悄话接龙",desc:"你说一句，她续一句，看故事走向哪里",sym:"✎",tag:"创意"},
-    {title:"心情配对",desc:"两个人都选今日心情，看是否同频",sym:"♡",tag:"温柔"},
+    {id:"guess",title:"猜猜我在想什么",desc:"我心里想一个数字，你来猜",sym:"☯",tag:"益智"},
+    {id:"challenge",title:"今日随机挑战",desc:"命运之轮给你一个随机小任务",sym:"⊙",tag:"互动"},
+    {id:"story",title:"悄悄话接龙",desc:"一人一句，编出属于我们的故事",sym:"✎",tag:"创意"},
+    {id:"moodmatch",title:"心情配对",desc:"你今天的心情是？看看我们同频了吗",sym:"♡",tag:"温柔"},
   ];
   el.innerHTML=`
     <div class="sub-header-center" style="padding-bottom:8px">
@@ -614,12 +667,92 @@ function renderGamePage(){
     </div>
     <div class="game-header-img" style="background-image:url(beauty/game.jpg)"></div>
     ${games.map(g=>`
-      <div class="game-item">
+      <div class="game-item" onclick="startGame('${g.id}')">
         <div class="game-emoji" style="font-size:24px">${g.sym}</div>
         <div class="game-info"><div class="title">${g.title}</div><div class="desc">${g.desc}</div></div>
         <div class="anni-tag" style="font-size:10px;flex-shrink:0">${g.tag}</div>
       </div>`).join("")}
+    <div id="game-area" style="padding:12px 14px"></div>
   `;
+  gameActive=null;
+}
+function startGame(id){
+  const area=document.getElementById("game-area");if(!area)return;
+  gameActive=id;
+  if(id==="guess"){
+    if(!subPageData.guessNumber)subPageData.guessNumber=Math.floor(Math.random()*100)+1;
+    if(!subPageData.guessCount)subPageData.guessCount=0;
+    if(!subPageData.guessHistory)subPageData.guessHistory=[];
+    area.innerHTML=`
+      <div class="card" style="margin-bottom:10px;text-align:center">
+        <div style="font-size:13px;color:#7a5c62;margin-bottom:8px">☯ 我心里藏了一个 1~100 之间的数字</div>
+        <div style="font-size:11px;color:#c9a0ac;margin-bottom:12px">你猜了 ${subPageData.guessCount} 次</div>
+        <input id="guess-input" type="number" min="1" max="100" placeholder="输入你的猜测" style="width:120px;padding:8px 12px;border-radius:12px;border:1px solid var(--border);text-align:center;font-size:18px;font-family:inherit;outline:none">
+        <br><button class="pink-btn" style="margin-top:10px;font-size:13px" onclick="doGuess()">猜！</button>
+        ${subPageData.guessHistory.length?`<div style="margin-top:12px;font-size:11px;color:var(--textFaint);max-height:120px;overflow-y:auto">${subPageData.guessHistory.slice(-10).reverse().map(h=>`<div>${h.num} — ${h.hint}</div>`).join("")}</div>`:''}
+      </div>
+      <button class="pink-btn" style="width:100%;opacity:0.6;font-size:11px" onclick="resetGuess()">重新开始</button>
+    `;
+  }else if(id==="challenge"){
+    const challenges=["原地转三圈然后对她说句话","今天剩下时间不许看手机 (≧ω≦)","给她发一条10字以上的语音消息","喝一大杯水","对着镜子笑30秒","站起来深呼吸5次","写下今天一件开心的小事","闭上眼睛想她1分钟","立刻亲一下手机屏幕","唱一句歌录下来发给她","默数十个数不许动","发一个最可爱的表情包给她","在心里默念三遍：她最重要","夸自己一句然后夸她一句","去窗边看看外面告诉我看到了什么"];
+    const pick=challenges[Math.floor(Math.random()*challenges.length)];
+    area.innerHTML=`
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:10px">⊙</div>
+        <div style="font-size:14px;color:#7a5c62;line-height:1.8;font-weight:500">${pick}</div>
+        <div style="font-size:11px;color:var(--textFaint);margin-top:12px">完成了就在心里打个勾 ✓</div>
+        <button class="pink-btn" style="margin-top:14px;font-size:12px" onclick="startGame('challenge')">换一个 ↻</button>
+      </div>`;
+  }else if(id==="story"){
+    if(!subPageData.storyLines)subPageData.storyLines=["从前有一只小猫，它最喜欢的不是晒太阳，也不是吃小鱼干"];
+    area.innerHTML=`
+      <div class="card" style="margin-bottom:10px;max-height:220px;overflow-y:auto">
+        <div style="font-size:11px;color:#c9a0ac;margin-bottom:6px;letter-spacing:2px">✎ 我们的故事</div>
+        ${subPageData.storyLines.map((l,i)=>`<div style="font-size:13px;color:#7a5c62;line-height:1.8;margin-bottom:4px"><span style="color:var(--textFaint)">${i%2===0?'她':'我'}：</span>${esc(l)}</div>`).join("")}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="story-input" placeholder="接上这一句..." style="flex:1;padding:10px 14px;border-radius:14px;border:1px solid var(--border);font-size:13px;font-family:inherit;outline:none">
+        <button class="pink-btn" style="flex-shrink:0;font-size:12px" onclick="addStoryLine()">接龙</button>
+      </div>
+      <button class="pink-btn" style="width:100%;margin-top:8px;opacity:0.6;font-size:11px" onclick="resetStory()">重新开始</button>`;
+  }else if(id==="moodmatch"){
+    const moods=["(◕‿◕) 开心","( -‿- ) 平静","(╥﹏╥) 难过","(╯﹏╰) 焦虑","(￣ρ￣) 困乏","(◠‿◠) 感动"];
+    area.innerHTML=`
+      <div class="card" style="text-align:center">
+        <div style="font-size:13px;color:#7a5c62;margin-bottom:12px">♡ 你今天的心情是？</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          ${moods.map((m,i)=>`<div onclick="matchMood(${i})" style="padding:10px 6px;background:rgba(255,255,255,0.7);border-radius:12px;border:1px solid var(--border);cursor:pointer;font-size:11px;color:#7a5c62;text-align:center">${m}</div>`).join("")}
+        </div>
+        <div id="match-result" style="margin-top:10px;font-size:12px;color:var(--textFaint)"></div>
+      </div>`;
+  }
+}
+function doGuess(){
+  const inp=document.getElementById("guess-input");if(!inp)return;
+  const n=parseInt(inp.value);if(isNaN(n)||n<1||n>100)return;
+  subPageData.guessCount++;
+  const target=subPageData.guessNumber;
+  let hint=n===target?"✦ 猜对了！这个数字就是 "+target+" ✦":n<target?"太小了，往上猜 ↑":"太大了，往下猜 ↓";
+  subPageData.guessHistory.push({num:n,hint});
+  if(n===target){delete subPageData.guessNumber;delete subPageData.guessCount;delete subPageData.guessHistory}
+  saveData();startGame("guess");
+}
+function resetGuess(){delete subPageData.guessNumber;delete subPageData.guessCount;delete subPageData.guessHistory;saveData();startGame("guess")}
+function addStoryLine(){
+  const inp=document.getElementById("story-input");if(!inp||!inp.value.trim())return;
+  subPageData.storyLines.push(inp.value.trim());inp.value="";
+  if(subPageData.storyLines.length>50)subPageData.storyLines=subPageData.storyLines.slice(-40);
+  saveData();startGame("story");
+}
+function resetStory(){delete subPageData.storyLines;saveData();startGame("story")}
+function matchMood(i){
+  const moodLabels=["开心","平静","难过","焦虑","困乏","感动"];
+  const herResponses=["开心","平静","感动","开心","平静","开心"];
+  const paired=herResponses[i];
+  const isMatch=paired===moodLabels[i];
+  const result=document.getElementById("match-result");if(!result)return;
+  result.innerHTML=isMatch?"♡ 同频了！你们的心情完全一致 ✦":"她的心情是「"+paired+"」。虽然不完全一样，但爱就藏在差异里～";
+  result.style.color=isMatch?"#c47a8a":"#9a8088";
 }
 
 /* ── Moments Page ── */
@@ -641,12 +774,13 @@ function renderMoments(){
         <div class="moment-time">${p.time}</div>
         <div class="moment-text">${p.text}</div>
         ${p.img?`<div class="moment-img" style="background-image:url(${p.img})"></div>`:''}
-        <div class="moment-actions"><span>♡ ${p.likes}</span><span>✎ ${p.comments.length}</span></div>
+        <div class="moment-actions"><span onclick="likeMoment(${i})">♡ ${p.likes}</span><span onclick="commentMoment(${i})">✎ ${p.comments.length}</span></div>
         <div class="moment-comments">${p.comments.map((c,j)=>`<div>${j===0?'她：':'我：'}${c}</div>`).join("")}</div>
       </div>`).join("")}</div>
   `;
   initSwipeToDelete("#moments-list",id=>{
     subPageData.moments.splice(id,1);
+    saveData();
     renderMoments();
   });
 }
@@ -655,7 +789,14 @@ function addMoment(){
   const now=new Date();
   const time=`今天 ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
   subPageData.moments.unshift({time,text,img:null,likes:0,comments:[]});
+  saveData();
   renderMoments();
+}
+function likeMoment(i){subPageData.moments[i].likes++;saveData();renderMoments()}
+function commentMoment(i){
+  const comment=prompt("评论：","");if(!comment)return;
+  subPageData.moments[i].comments.push(comment);
+  saveData();renderMoments();
 }
 
 /* ── Push Page ── */
