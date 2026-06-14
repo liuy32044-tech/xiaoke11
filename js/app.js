@@ -225,10 +225,37 @@ function changeModel(v){console.log("Model:",v)}
 /* ═══ Stickers ═══ */
 let _allStickers=[];
 function loadManageStickers(){fetch(API+"/api/stickers").then(r=>r.json()).then(d=>{_allStickers=d.stickers||[];renderManageGrid()}).catch(()=>{})}
-function renderManageGrid(){
+function renderManageGrid(forceExpand){
   const el=document.getElementById("sticker-manage-grid");if(!el)return;
   if(!_allStickers.length){el.innerHTML=`<div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸 ◇</div>`;return}
-  el.innerHTML=_allStickers.map(s=>`<div class="sticker-item"><button class="sticker-del" onclick="event.stopPropagation();deleteSticker(${s.id})">&times;</button><img src="${s.url}" loading="lazy" onerror="this.remove()"><div class="tag">${esc(s.tag||"日常")}</div></div>`).join("");
+  const maxShow=6,expanded=forceExpand||el.dataset.expanded==="1";
+  const show=expanded?_allStickers:_allStickers.slice(0,maxShow);
+  el.dataset.expanded=expanded?"1":"0";
+  el.innerHTML=show.map(s=>{
+    const id=s.id;
+    return `<div class="sticker-item" id="sitem-${id}">
+      <button class="sticker-del" onclick="event.stopPropagation();delStickerConfirm(${id})">&times;</button>
+      <img src="${s.url}" loading="lazy" onerror="this.parentElement.remove()">
+      <div class="tag">${esc(s.tag||"日常")}</div>
+    </div>`;
+  }).join("");
+  if(_allStickers.length>maxShow&&!expanded){
+    el.innerHTML+=`<div onclick="renderManageGrid(true)" style="grid-column:1/-1;text-align:center;padding:10px;color:var(--accent);font-size:12px;cursor:pointer;background:rgba(255,255,255,0.5);border-radius:10px;border:1px dashed var(--border)">◇ 还有 ${_allStickers.length-maxShow} 张，点击展开</div>`;
+  }else if(expanded&&_allStickers.length>maxShow){
+    el.innerHTML+=`<div onclick="renderManageGrid(false)" style="grid-column:1/-1;text-align:center;padding:10px;color:var(--textFaint);font-size:12px;cursor:pointer;background:rgba(255,255,255,0.5);border-radius:10px;border:1px dashed var(--border)">∧ 收起</div>`;
+  }
+}
+function delStickerConfirm(id){
+  if(!confirm("确定删除这张贴纸吗？"))return;
+  const item=document.getElementById("sitem-"+id);
+  if(item){item.style.transition="opacity 0.3s";item.style.opacity="0.3"}
+  fetch(API+"/api/stickers/"+id,{method:"DELETE"}).then(r=>r.json()).then(()=>{
+    _allStickers=_allStickers.filter(s=>s.id!==id);
+    renderManageGrid();
+  }).catch(()=>{
+    if(item)item.style.opacity="1";
+    alert("删除失败，请重试");
+  });
 }
 function previewStickerFile(){
   const f=document.getElementById("sticker-file-input").files[0];
