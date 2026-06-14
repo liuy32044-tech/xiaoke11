@@ -390,7 +390,7 @@ body{
 /* 粉色纱 — 盖在壁纸上 */
 #splash::before{
   content:"";position:absolute;inset:0;
-  background:rgba(253,246,248,0.38);z-index:0;pointer-events:none
+  background:rgba(253,246,248,0.92);z-index:0;pointer-events:none
 }
 #splash>*{position:relative;z-index:1}
 #splash.out{opacity:0;pointer-events:none}
