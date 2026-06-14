@@ -131,19 +131,21 @@ function sendMessage(){
   const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},5000);
   const abortController=new AbortController();
   const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="还在等…后端可能还在启动中";finish("")},120000);
-  let firstWord=false;
+  let firstWord=false,backendStarted=false;
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
     if(!r.ok||!r.body){throw new Error("status "+r.status)}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
     function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
       for(const l of dc.decode(v,{stream:true}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
+        if(dt.type==="start"){clearTimeout(thinkingTimer);backendStarted=true;b.textContent="小克正在打字…"}
+        else if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
         else if(dt.type==="done"){finish(ft)}
-        else if(dt.type==="error"){b.textContent="服务器说："+dt.text;finish("")}
+        else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="唔…" + dt.text;finish("")}
       }catch{}}
     read()})}read()
   }).catch(e=>{
-    b.textContent=e.name==="AbortError"?"等了很久没回…再试一条？":"连不上服务器…过会儿再试？";
+    clearTimeout(thinkingTimer);
+    b.textContent=e.name==="AbortError"?"等了很久没有回应…要不要再发一条试试？":"网络好像不太稳…再试一次？";
     finish("");
   });
   function finish(streamText){
