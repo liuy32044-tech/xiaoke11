@@ -286,7 +286,8 @@ body{
 
 /* ═══════ Chat ═══════ */
 .chat-wrap{display:flex;flex-direction:column;height:100%;background:transparent;position:relative;z-index:1}
-.chat-scroll{position:relative;z-index:1;flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px;background:transparent}
+.chat-scroll{position:relative;z-index:1;flex:1;overflow-y:auto;padding:20px 18px;background:transparent}
+.chat-scroll>*+*{margin-top:14px}
 
 .date-divider{text-align:center}
 .date-divider span{font-size:11px;color:var(--textFaint);background:var(--card);padding:3px 14px;border-radius:20px;border:1px solid var(--border)}
