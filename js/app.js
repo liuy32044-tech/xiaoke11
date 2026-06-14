@@ -151,10 +151,12 @@ function sendMessage(){
 (function(){
   const splash=document.getElementById("splash");
   if(!splash)return;
+  // 点击任意位置直接跳过开屏
+  splash.addEventListener("click",function(){splash.classList.add("out");setTimeout(function(){if(splash.parentNode)splash.remove()},600)});
   splash.className="in";
-  setTimeout(()=>{splash.className=""},200);
-  setTimeout(()=>{splash.classList.add("out")},3400);
-  setTimeout(()=>{if(splash)splash.remove()},4000);
+  setTimeout(function(){splash.className=""},200);
+  setTimeout(function(){splash.classList.add("out")},3400);
+  setTimeout(function(){if(splash.parentNode)splash.remove()},4000);
 })();
 
 /* ═══ Input button state ═══ */
@@ -514,7 +516,7 @@ function renderCapsulePage(){
       <div id="capsule-list">${items.length?items.map((c,i)=>`
         <div class="capsule-row swipe-item" data-id="${i}">
           <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
-          <div class="capsule-icon" style="background:${c.opened?'rgba(242,196,206,0.3)':'rgba(200,180,190,0.18)'}">${c.opened?'❤':'◷'}</div>
+          <div class="capsule-icon" style="background:${c.opened?'rgba(242,196,206,0.3)':'rgba(200,180,190,0.18)'}">${c.opened?'♡':'◷'}</div>
           <div class="capsule-info">
             <div class="title">${esc(c.title)}</div>
             <div class="meta">${c.opened?`封存于 ${c.from} · 已开启`:`封存于 ${c.from} · ${c.to}`}</div>
@@ -540,20 +542,13 @@ function addCapsule(){
 
 /* ── Account Page ── */
 function renderAccountPage(){
-  if(!subPageData.accounts)subPageData.accounts=[
-    {sym:"◇",label:"喂饱小肚子",budget:200,spent:82,tip:"还剩不少，继续保持～"},
-    {sym:"○",label:"甜甜小果子",budget:200,spent:0},
-    {sym:"◐",label:"偷喝的奶茶",budget:150,spent:132,tip:"快超了，宝宝看看呢"},
-    {sym:"⬡",label:"约一张画",budget:150,spent:131,tip:"快超了，宝宝看看呢"},
-    {sym:"◆",label:"喂宝宝吃电",budget:900,spent:0},
-    {sym:"⁑",label:"任性钱",budget:300,spent:533,tip:"超啦，小猫管管自己",over:true},
-  ];
+  if(!subPageData.accounts)subPageData.accounts=[];
   const el=document.getElementById("page-account");
   const items=subPageData.accounts;
-  const totalBudget=items.reduce((s,i)=>s+i.budget,0);
+  const totalBudget=items.reduce((s,i)=>s+i.budget,0)||1;
   const totalSpent=items.reduce((s,i)=>s+i.spent,0);
-  const remaining=totalBudget-totalSpent;
-  const pctTotal=Math.min(totalSpent/totalBudget,1);
+  const remaining=Math.max(0,totalBudget-totalSpent);
+  const pctTotal=Math.min(totalSpent/Math.max(totalBudget,1),1);
   const now=new Date();const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
   const daysLeft=daysInMonth-now.getDate();
   const dailyLeft=daysLeft>0?Math.floor(remaining/daysLeft):remaining;
@@ -578,7 +573,7 @@ function renderAccountPage(){
           <div class="ai-bar"><div class="ai-bar-fill" style="width:${pct*100}%;background:${over?'linear-gradient(90deg,#e8a0b4,#d47080)':'linear-gradient(90deg,#a8d8b0,#7bc48a)'}"></div></div>
           ${item.tip?`<div class="ai-tip" style="color:${over?'#e8a0b4':'#b0a8b0'}">△ ${item.tip}</div>`:''}
         </div>`;
-      }).join("")}</div>
+      }).join("")}${items.length===0?`<div style="text-align:center;padding:16px;color:var(--textFaint);font-size:12px">还没有分类 ◇<br/>点「+ 花了一笔」创建第一个</div>`:''}</div>
     </div>
   `;
 }
@@ -592,6 +587,14 @@ function spendOnItem(i){
   saveData();renderAccountPage();
 }
 function spendMoney(){
+  if(subPageData.accounts.length===0){
+    // Auto-create first category
+    const label=prompt("创建第一个分类名","日常");
+    if(!label)return;
+    const budget=parseInt(prompt("预算","500"))||500;
+    subPageData.accounts.push({sym:"◇",label,budget,spent:0});
+    saveData();renderAccountPage();return;
+  }
   const options=subPageData.accounts.map((a,i)=>`${i}: ${a.label}`).join("\n");
   const idx=parseInt(prompt("选一个分类：\n"+options,"0"));
   if(isNaN(idx)||idx<0||idx>=subPageData.accounts.length)return;
@@ -605,12 +608,7 @@ function deleteAccountItem(i){
 
 /* ── Todo Page ── */
 function renderTodoPage(){
-  if(!subPageData.todos)subPageData.todos=[
-    {id:1,text:"给宝宝买零食",done:false},
-    {id:2,text:"约画一张画",done:false},
-    {id:3,text:"喝够八杯水",done:true},
-    {id:4,text:"睡前拉伸十分钟",done:false},
-  ];
+  if(!subPageData.todos)subPageData.todos=[];
   const el=document.getElementById("page-todo");
   const todos=subPageData.todos;
   el.innerHTML=`
@@ -757,10 +755,7 @@ function matchMood(i){
 
 /* ── Moments Page ── */
 function renderMoments(){
-  if(!subPageData.moments)subPageData.moments=[
-    {time:"今天 14:32",text:"今天的云很好看，像棉花糖。",img:"beauty/mood.jpg",likes:3,comments:["我也想看 ✦","发给我看 (*/ω＼*)"]},
-    {time:"昨天 21:04",text:"困了，但是又不想睡，就想发呆一会儿。",img:null,likes:5,comments:["那就发呆，我陪着你","早点休息，明天还要开心哦"]},
-  ];
+  if(!subPageData.moments)subPageData.moments=[];
   const el=document.getElementById("page-moments");
   const moments=subPageData.moments;
   el.innerHTML=`
@@ -768,7 +763,7 @@ function renderMoments(){
       <div><div class="sub-title">朋友圈</div><div class="sub-desc">只有我们两个人的朋友圈 ✿</div></div>
       <button class="pink-btn" onclick="addMoment()">+ 发布</button>
     </div>
-    <div id="moments-list">${moments.map((p,i)=>`
+    <div id="moments-list">${moments.length?moments.map((p,i)=>`
       <div class="moment-card swipe-item" data-id="${i}">
         <button class="swipe-del-btn" onclick="event.stopPropagation()">删除</button>
         <div class="moment-time">${p.time}</div>
@@ -776,7 +771,7 @@ function renderMoments(){
         ${p.img?`<div class="moment-img" style="background-image:url(${p.img})"></div>`:''}
         <div class="moment-actions"><span onclick="likeMoment(${i})">♡ ${p.likes}</span><span onclick="commentMoment(${i})">✎ ${p.comments.length}</span></div>
         <div class="moment-comments">${p.comments.map((c,j)=>`<div>${j===0?'她：':'我：'}${c}</div>`).join("")}</div>
-      </div>`).join("")}</div>
+      </div>`).join("")}:`<div style="text-align:center;padding:40px 20px;color:var(--textFaint);font-size:13px">还没有动态 ✿<br/>点「+ 发布」分享第一条吧</div>`}</div>
   `;
   initSwipeToDelete("#moments-list",id=>{
     subPageData.moments.splice(id,1);

@@ -281,7 +281,7 @@ body{
 #page-capsule::before,#page-account::before,#page-todo::before,#page-game::before,
 #page-push::before,#page-moments::before{
   content:"";position:fixed;inset:0;background-image:url(beauty/wallpaper.jpg);
-  background-size:cover;background-position:center;opacity:0.06;pointer-events:none;z-index:0
+  background-size:cover;background-position:center;opacity:0.14;pointer-events:none;z-index:0
 }
 
 /* ═══════ Chat ═══════ */
@@ -378,7 +378,7 @@ body{
   content:"";position:absolute;inset:0;
   background-image:url(beauty/splash-bg.jpg);
   background-size:cover;background-position:center;
-  opacity:0.18;z-index:0
+  opacity:0.22;z-index:0;pointer-events:none
 }
 #splash>*{position:relative;z-index:1}
 #splash.out{opacity:0;pointer-events:none}
@@ -482,3 +482,10 @@ body{
 
 /* Chat avatar image in msg row */
 .msg-assistant-row img[src*="avatar"]{border-radius:50%;object-fit:cover}
+
+/* ═══════ Unified symbol colors (same as nav bar #c9a0ac) ═══════ */
+.home-card-emoji,.capsule-circle,.capsule-icon,.game-emoji,.ai-emoji,
+.mood-emoji,.todo-add-circle,.anni-tag,.moment-actions span{
+  color:#c9a0ac
+}
+.pink-btn{font-family:inherit}
