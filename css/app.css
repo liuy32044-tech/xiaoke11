@@ -382,13 +382,15 @@ body{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   transition:opacity 0.5s ease;
   font-family:'Georgia','Noto Serif SC','PingFang SC','Microsoft YaHei',serif;
-  /* 壁纸铺满底层 */
-  background:url(../beauty/splash-bg.jpg) center/cover no-repeat;
+  background-image:url(../beauty/splash-bg.jpg);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
 }
-/* 半透明粉色遮罩 — 让壁纸透过粉色可见 */
+/* 粉色纱 — 盖在壁纸上 */
 #splash::before{
   content:"";position:absolute;inset:0;
-  background:rgba(253,246,248,0.52);z-index:0;pointer-events:none
+  background:rgba(253,246,248,0.38);z-index:0;pointer-events:none
 }
 #splash>*{position:relative;z-index:1}
 #splash.out{opacity:0;pointer-events:none}
