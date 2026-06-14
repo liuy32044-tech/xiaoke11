@@ -90,14 +90,15 @@ let lastLoadedSession=null;
 
 function loadChat(force){
   if(isStreaming)return;
-  if(!force && currentSession===lastLoadedSession && document.getElementById("chat-msgs").children.length>2)return;
+  // 已有内容且session没变，跳过（避免DOM闪）
+  const el=document.getElementById("chat-msgs");
+  if(!force && currentSession===lastLoadedSession && el && el.children.length>2)return;
   lastLoadedSession=currentSession;
   fetch(API+"/api/messages/"+currentSession).then(r=>r.json()).then(d=>{
-    const el=document.getElementById("chat-msgs");
     if(d.messages.length===0){el.innerHTML=`<div class="date-divider"><span>今天</span></div><div style="text-align:center;color:var(--textFaint);margin-top:36px;font-size:13px">我是小克。有什么想和我说的吗？</div>`}
     else{el.innerHTML=`<div class="date-divider"><span>今天</span></div>`+d.messages.map(m=>msgHTML(m)).join("")}
     el.scrollTop=el.scrollHeight;
-    const inp=document.getElementById("chat-input");if(inp)inp.focus();
+    const inp=document.getElementById("chat-input");if(inp&&document.activeElement!==inp)inp.focus();
   });
 }
 
@@ -148,7 +149,8 @@ function sendMessage(){
   function finish(streamText){
     clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
     isStreaming=false;sb.className="send-btn off";loadSidebarSessions();
-    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1500);
+    // 不再从数据库重载——流式内容已经正确显示在DOM中，避免闪烁
+    lastLoadedSession=currentSession;
   }
 }
 
@@ -284,7 +286,7 @@ function sendSticker(url){
       }catch{}}
     read()})}read()
   }).catch(e=>{b.textContent="发送失败…";finishStickerStream("")});
-  function finishStickerStream(ft){clearTimeout(timeoutTimer);isStreaming=false;loadSidebarSessions();setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1500)}
+  function finishStickerStream(ft){clearTimeout(timeoutTimer);isStreaming=false;loadSidebarSessions();lastLoadedSession=currentSession}
 }
 
 /* ═══ Data persistence + quota protection ═══ */
