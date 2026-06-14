@@ -28,17 +28,27 @@ body{
 
 /* ═══════ Sidebar overlay ═══════ */
 #sidebar-overlay{
-  position:fixed;inset:0;background:rgba(92,64,72,0.15);z-index:10;display:none;
+  position:fixed;inset:0;background:rgba(92,64,72,0.22);z-index:10;display:none;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)
 }
 #sidebar-overlay.show{display:block}
 
 #sidebar{
   position:fixed;top:0;left:0;bottom:0;width:240px;
-  background:#FFF5F8; border-right:1px solid var(--border);
+  background:transparent; border-right:1px solid rgba(242,196,206,0.3);
   display:flex;flex-direction:column;z-index:20;
   transform:translateX(-100%);transition:transform .3s ease;
+  /* 毛玻璃效果 — 壁纸透过来 */
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
 }
-#sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(242,196,206,0.2)}
+/* 侧栏壁纸底层 */
+#sidebar::before{
+  content:"";position:absolute;inset:0;
+  background:rgba(255,245,248,0.82);z-index:0
+}
+#sidebar>*{position:relative;z-index:1}
+#sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(242,196,206,0.25)}
 
 .sidebar-header{padding:28px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .sidebar-header .t{font-size:14px;color:var(--textMid);font-style:italic}
@@ -277,7 +287,7 @@ body{
 #page-mood,#page-anniversary,#page-capsule,#page-account,#page-todo,#page-game,#page-push{
   position:relative
 }
-#page-chat::before,#page-reader::before,#page-mood::before,#page-anniversary::before,
+#page-chat::before,#page-reader::before,#page-dashboard::before,#page-mood::before,#page-anniversary::before,
 #page-capsule::before,#page-account::before,#page-todo::before,#page-game::before,
 #page-push::before,#page-moments::before{
   content:"";position:fixed;inset:0;background-image:url(../beauty/wallpaper.jpg);
@@ -368,17 +378,16 @@ body{
 /* ═══════ Splash Screen ═══════ */
 #splash{
   position:fixed;inset:0;z-index:100;
-  background:#FDF6F8;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   transition:opacity 0.5s ease;
   font-family:'Georgia','Noto Serif SC','PingFang SC','Microsoft YaHei',serif;
+  /* 壁纸铺满底层 */
+  background:url(../beauty/splash-bg.jpg) center/cover no-repeat;
 }
-/* 开屏背景融合图 */
+/* 半透明粉色遮罩 — 让壁纸透过粉色可见 */
 #splash::before{
   content:"";position:absolute;inset:0;
-  background-image:url(../beauty/splash-bg.jpg);
-  background-size:cover;background-position:center;
-  opacity:0.25;z-index:0;pointer-events:none
+  background:rgba(253,246,248,0.52);z-index:0;pointer-events:none
 }
 #splash>*{position:relative;z-index:1}
 #splash.out{opacity:0;pointer-events:none}
