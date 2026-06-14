@@ -9,10 +9,11 @@ function closeSidebar(){document.getElementById("sidebar").classList.remove("ope
 function toggleSidebar(){document.getElementById("sidebar").classList.contains("open")?closeSidebar():openSidebar()}
 function loadSidebarSessions(){
   fetch(API+"/api/sessions").then(r=>r.json()).then(d=>{
+    if(!d||!d.sessions){console.warn('[sidebar] no sessions in response');return}
     document.getElementById("sidebar-sessions-list").innerHTML=d.sessions.map(s=>
       `<div class="si${s.id===currentSession?' active':''}" onclick="currentSession=${s.id};switchPage('chat');closeSidebar()"><div class="n">${esc(s.name||'对话 '+s.id)}</div><div class="t">${s.updated_at?s.updated_at.slice(5,16):''}</div></div>`
     ).join("")||'<div style="color:var(--textFaint);font-size:12px;padding:8px 12px">还没有对话</div>';
-  });
+  }).catch(e=>{console.warn('[sidebar] fetch failed',e.message)});
 }
 
 /* ═══ Nav ═══ */
