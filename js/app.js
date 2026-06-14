@@ -129,59 +129,43 @@ function sendMessage(){
   aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble" id="${placeholderId}">…</div></div>`;
   msgs.appendChild(aw);msgs.scrollTop=msgs.scrollHeight;
   const b=document.getElementById(placeholderId);if(!b)return;
-  const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},5000);
-  const abortController=new AbortController();
-  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="还在等…后端可能还在启动中";finish("")},120000);
-  let firstWord=false,backendStarted=false;
-  const fallbackTimer=setTimeout(async ()=>{
-    if(firstWord||backendStarted)return;
-    console.log('[chat] SSE stalled 8s, falling back to /send');
-    abortController.abort();
-    try{
-      b.textContent="还在想…（切换备用通道）";
-      const fbResp=await fetch(API+"/api/chat/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})});
-      const fbData=await fbResp.json();
-      clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
-      if(fbData.reply){
-        b.textContent=fbData.reply;msgs.scrollTop=msgs.scrollHeight;
-        finish(fbData.reply);
-      }else{
-        b.textContent="唔…"+(fbData.error||"没有收到回复");
-        finish("");
-      }
-    }catch(fbErr){
-      clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
-      b.textContent="网络好像不太稳…再试一次？";
-      finish("");
+  const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},4000);
+
+  // ★ /api/chat/stream 智能路由：
+  //    冷实例 → 返回 JSON（Content-Type: application/json）
+  //    热实例 → 返回 SSE（Content-Type: text/event-stream）
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
+    const ct=r.headers.get("Content-Type")||"";
+    if(!ct.includes("event-stream")){
+      // 冷实例：纯 JSON 响应
+      return r.json().then(d=>{
+        clearTimeout(thinkingTimer);
+        if(d.reply){b.textContent=d.reply;msgs.scrollTop=msgs.scrollHeight;finish(d.reply)}
+        else{b.textContent="唔…"+(d.error||"没有收到回复");finish("")}
+      });
     }
-  },8000);
-  console.log('[chat] sending to', API+"/api/chat/stream");
-  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
-    console.log('[chat] fetch ok, status='+r.status+', hasBody='+!!r.body);
-    if(!r.ok||!r.body){throw new Error("status "+r.status)}
-    const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
-    function read(){rd.read().then(({done,v})=>{
-      if(done){console.log('[chat] stream done, text len='+ft.length);finish(ft);return}
+    // 热实例：SSE 流式
+    if(!r.body)throw new Error("no stream body");
+    const rd=r.body.getReader(),dc=new TextDecoder();let ft="",firstChunk=true;
+    function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
       const raw=dc.decode(v,{stream:true});
-      console.log('[chat] chunk',raw.length+'b', JSON.stringify(raw.slice(0,80)));
+      if(firstChunk){b.textContent="";firstChunk=false} // 第一个字来了就清 "…"
       for(const l of raw.split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="start"){console.log('[chat] event start');clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);backendStarted=true;b.textContent="小克正在打字…"}
-        else if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
-        else if(dt.type==="done"){console.log('[chat] event done');clearTimeout(fallbackTimer);finish(ft)}
-        else if(dt.type==="error"){console.log('[chat] event error',dt.text);clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);b.textContent="唔…" + dt.text;finish("")}
+        if(dt.type==="start"){clearTimeout(thinkingTimer);b.textContent="小克正在打字…"}
+        else if(dt.type==="text"){ft+=dt.text;clearTimeout(thinkingTimer);b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){finish(ft)}
+        else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="唔…"+dt.text;finish("")}
       }catch{}}
     read()})}read()
   }).catch(e=>{
-    if(fallbackTimer)clearTimeout(fallbackTimer);
     console.log('[chat] fetch failed:', e.name, e.message);
     clearTimeout(thinkingTimer);
     b.textContent=e.name==="AbortError"?"等了很久没有回应…要不要再发一条试试？":"网络好像不太稳…再试一次？";
     finish("");
   });
   function finish(streamText){
-    clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
+    clearTimeout(thinkingTimer);
     isStreaming=false;sb.className="send-btn off";
-    // 仅首次消息后刷新会话列表（更新"最后活跃时间"），后续不影响
     if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
     lastLoadedSession=currentSession;
   }
