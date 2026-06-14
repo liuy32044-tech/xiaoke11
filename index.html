@@ -101,67 +101,91 @@
   <!-- ═══ Main content ═══ -->
   <div id="main-content">
 
-    <!-- ══ HOME ══ -->
+    <!-- ══ HOME (v2 redesign) ══ -->
     <div id="page-home" class="page active">
-      <div class="home-wrap">
-
-        <!-- Profile card -->
-        <div class="card home-profile">
-          <svg width="52" height="52" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="20" fill="#F9E8EC"/>
-            <polygon points="11,11 14,4 17,12" fill="#F2C4CE"/>
-            <polygon points="29,11 26,4 23,12" fill="#F2C4CE"/>
-            <circle cx="20" cy="19" r="9" fill="#F2C4CE"/>
-            <circle cx="16.5" cy="18" r="1.4" fill="#7a5c62"/>
-            <circle cx="23.5" cy="18" r="1.4" fill="#7a5c62"/>
-            <ellipse cx="20" cy="21" rx="1.3" ry="0.9" fill="#e8a0b0"/>
-            <line x1="12" y1="19.5" x2="6" y2="18.5" stroke="#c9889a" stroke-width="0.9"/>
-            <line x1="12" y1="21" x2="6" y2="21.5" stroke="#c9889a" stroke-width="0.9"/>
-            <line x1="28" y1="19.5" x2="34" y2="18.5" stroke="#c9889a" stroke-width="0.9"/>
-            <line x1="28" y1="21" x2="34" y2="21.5" stroke="#c9889a" stroke-width="0.9"/>
-          </svg>
-          <div class="info">
-            <div class="t">小克</div>
-            <div class="s">· 在线 ·</div>
-          </div>
-          <div class="greet" id="greeting">晚上好 ✦</div>
+      <!-- Hero -->
+      <div class="home-hero">
+        <div class="home-hero-bg" style="background-image:url(beauty/wallpaper.jpg)"></div>
+        <svg class="paw-deco" style="position:absolute;top:18px;left:24px;transform:rotate(-25deg)" width="18" height="18" viewBox="0 0 18 18" fill="none"><ellipse cx="9" cy="11.5" rx="5" ry="4.5" fill="#F2C4CE" opacity="0.4"/><circle cx="5" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="9" cy="6" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="13" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="3" cy="9.5" r="1.5" fill="#F2C4CE" opacity="0.4"/></svg>
+        <svg class="paw-deco" style="position:absolute;top:55px;right:30px;transform:rotate(12deg)" width="18" height="18" viewBox="0 0 18 18" fill="none"><ellipse cx="9" cy="11.5" rx="5" ry="4.5" fill="#F2C4CE" opacity="0.4"/><circle cx="5" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="9" cy="6" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="13" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="3" cy="9.5" r="1.5" fill="#F2C4CE" opacity="0.4"/></svg>
+        <svg class="paw-deco" style="position:absolute;bottom:20px;left:60px;transform:rotate(8deg);opacity:0.6" width="18" height="18" viewBox="0 0 18 18" fill="none"><ellipse cx="9" cy="11.5" rx="5" ry="4.5" fill="#F2C4CE" opacity="0.4"/><circle cx="5" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="9" cy="6" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="13" cy="7" r="2" fill="#F2C4CE" opacity="0.4"/><circle cx="3" cy="9.5" r="1.5" fill="#F2C4CE" opacity="0.4"/></svg>
+        <div class="home-hero-inner">
+          <div class="home-days-num" id="home-days">114</div>
+          <div class="home-days-label">一起的第 <span id="home-days2">114</span> 天</div>
+          <div class="home-days-since">since 2026.03.01</div>
+          <div class="home-quote">"所有的晦暗都留给过往，<br/>从遇见你开始，凛冬散尽，星河长明。"</div>
         </div>
+      </div>
 
-        <!-- Brief card -->
-        <div class="card">
-          <div class="brief-head">
-            <div class="t">今日简报</div>
-            <div class="r" onclick="loadBriefing()">刷新</div>
-          </div>
-          <div class="brief-body" id="briefing-text">今天是个好日子，记得喝水，早点休息。我在这里等你～</div>
+      <!-- Big cards: 聊天 / 记忆 -->
+      <div class="home-grid2">
+        <div class="home-card-big" onclick="switchPage('chat')">
+          <div class="home-card-img" style="background-image:url(beauty/cardChat.jpg)"></div>
+          <div class="home-card-label">聊天</div>
+          <div class="home-card-sub">和她说说话 &gt;///&lt;</div>
         </div>
+        <div class="home-card-big" onclick="switchPage('reader')">
+          <div class="home-card-img" style="background-image:url(beauty/cardMemory.jpg)"></div>
+          <div class="home-card-label">记忆</div>
+          <div class="home-card-sub">我们的故事 ✦</div>
+        </div>
+      </div>
 
-        <!-- 4 feature cards -->
-        <div class="feature-grid">
-          <div class="card feature-card" onclick="switchPage('chat')">
-            <svg width="26" height="26" viewBox="0 0 22 22" fill="none"><path d="M4 4H18C19.1 4 20 4.9 20 6V14C20 15.1 19.1 16 18 16H7L3 20V6C3 4.9 3.9 4 4 4Z" stroke="#c9a0ac" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="8" cy="10" r="1" fill="#c9a0ac"/><circle cx="11" cy="10" r="1" fill="#c9a0ac"/><circle cx="14" cy="10" r="1" fill="#c9a0ac"/></svg>
-            <div class="lbl">聊天</div>
-          </div>
-          <div class="card feature-card" onclick="switchPage('dashboard')">
-            <svg width="26" height="26" viewBox="0 0 22 22" fill="none"><rect x="3" y="14" width="4" height="5" rx="1" stroke="#c9a0ac" stroke-width="1.5"/><rect x="9" y="10" width="4" height="9" rx="1" stroke="#c9a0ac" stroke-width="1.5"/><rect x="15" y="6" width="4" height="13" rx="1" stroke="#c9a0ac" stroke-width="1.5"/></svg>
-            <div class="lbl">设置</div>
-          </div>
-          <div class="card feature-card" onclick="showPostForm()">
-            <svg width="26" height="26" viewBox="0 0 22 22" fill="none"><path d="M11 3C11 3 4 7 4 13C4 16.3 7.1 19 11 19C14.9 19 18 16.3 18 13C18 7 11 3 11 3Z" stroke="#c9a0ac" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M11 8V13L14 15" stroke="#c9a0ac" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <div class="lbl">记录</div>
-          </div>
-          <div class="card feature-card" onclick="switchPage('reader')">
-            <svg width="26" height="26" viewBox="0 0 22 22" fill="none"><path d="M11 3L13.5 8.5L19.5 9.3L15 13.6L16.2 19.5L11 16.7L5.8 19.5L7 13.6L2.5 9.3L8.5 8.5L11 3Z" stroke="#c9a0ac" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
-            <div class="lbl">回忆</div>
+      <!-- Medium cards: 心情 / 纪念日 / 朋友圈 -->
+      <div class="home-grid3">
+        <div class="home-card-med" onclick="goSubPage('mood')">
+          <div class="home-card-img-sm" style="background-image:url(beauty/mood.jpg)"></div>
+          <div class="home-card-label">心情</div>
+          <div class="home-card-sub">mood</div>
+        </div>
+        <div class="home-card-med" onclick="goSubPage('anniversary')">
+          <div class="home-card-img-sm" style="background-image:url(beauty/anniversary.jpg)"></div>
+          <div class="home-card-label">纪念日</div>
+          <div class="home-card-sub">milestone</div>
+        </div>
+        <div class="home-card-med" onclick="switchPage('moments')">
+          <div class="home-card-img-sm" style="background-image:url(beauty/moments.jpg)"></div>
+          <div class="home-card-label">朋友圈</div>
+          <div class="home-card-sub">moments</div>
+        </div>
+      </div>
+
+      <!-- Small cards: 清单 / 游戏 / 胶囊 / 账本 -->
+      <div class="home-grid4">
+        <div class="home-card-sm" onclick="goSubPage('todo')">
+          <div class="home-card-img-xs" style="background-image:url(beauty/note.jpg)"></div>
+          <div class="home-card-label-sm">清单</div>
+        </div>
+        <div class="home-card-sm" onclick="goSubPage('game')">
+          <div class="home-card-img-xs" style="background-image:url(beauty/game.jpg)"></div>
+          <div class="home-card-label-sm">游戏</div>
+        </div>
+        <div class="home-card-sm" onclick="goSubPage('capsule')">
+          <div class="home-card-img-xs" style="background-image:url(beauty/cardMemory.jpg)"></div>
+          <div class="home-card-label-sm">胶囊</div>
+        </div>
+        <div class="home-card-sm" onclick="goSubPage('account')">
+          <div class="home-card-img-xs" style="background-image:url(beauty/note.jpg)"></div>
+          <div class="home-card-label-sm">账本</div>
+        </div>
+      </div>
+
+      <!-- Bottom two -->
+      <div class="home-grid2 home-bottom2">
+        <div class="home-card-row" onclick="switchPage('reader')">
+          <span class="home-card-emoji">🐾</span>
+          <div>
+            <div class="home-card-label">记忆库</div>
+            <div class="home-card-sub">记得每一句话 ·</div>
           </div>
         </div>
-
-        <!-- Recent memory -->
-        <div class="card">
-          <div class="sidebar-label">最近记忆</div>
-          <div id="home-posts" style="font-size:13px;color:var(--textFaint);text-align:center;padding:12px 0">还没有记忆，去和我说说话吧～</div>
+        <div class="home-card-row" onclick="goSubPage('push')">
+          <span class="home-card-emoji">🔔</span>
+          <div>
+            <div class="home-card-label">推送</div>
+            <div class="home-card-sub">我会主动找你 ·</div>
+          </div>
         </div>
-
       </div>
     </div>
 
@@ -190,95 +214,19 @@
       </div>
     </div>
 
-    <!-- ══ SETTINGS ══ -->
-    <div id="page-dashboard" class="page" style="display:none">
-      <div class="data-wrap">
-        <div class="card">
-          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">个性化设置</div>
-
-          <div class="form-group">
-            <label>系统提示词</label>
-            <textarea id="set-system-prompt" rows="3" placeholder="定义小克的人格和行为方式…"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Temperature <span id="set-temp-val" style="color:var(--accentLight)">0.7</span></label>
-            <input type="range" id="set-temperature" min="0" max="2" step="0.1" value="0.7"
-              oninput="document.getElementById('set-temp-val').textContent=this.value">
-          </div>
-
-          <div class="form-group">
-            <label>最大上下文轮数</label>
-            <input type="number" id="set-max-rounds" min="5" max="100" value="30">
-          </div>
-
-          <div class="form-group">
-            <label>压缩触发阈值 (tokens)</label>
-            <input type="number" id="set-compress-threshold" min="1000" max="50000" step="500" value="6000">
-          </div>
-
-          <div class="form-group">
-            <label>压缩后保留轮数</label>
-            <input type="number" id="set-keep-rounds" min="2" max="30" value="10">
-          </div>
-
-          <div class="form-group">
-            <label>最大回复 Token</label>
-            <input type="number" id="set-max-tokens" min="256" max="32768" step="256" value="4096">
-          </div>
-
-          <div id="set-msg" style="text-align:center;font-size:12px;margin-bottom:10px;color:var(--accentLight);min-height:18px"></div>
-
-          <button class="btn-save" onclick="saveSettings()">保存设置</button>
+    <!-- ══ MOMENTS (朋友圈) ══ -->
+    <div id="page-moments" class="page sub-page" style="display:none">
+      <div class="sub-header">
+        <div>
+          <div class="sub-title">朋友圈</div>
+          <div class="sub-desc">只有我们两个人的朋友圈 🌸</div>
         </div>
-
-        <div class="card">
-          <div class="data-header">
-            <div class="t">今日数据</div>
-            <div class="d" id="dashboard-date"></div>
-          </div>
-          <div class="stat-grid" id="dash-stats"></div>
-        </div>
-
-        <!-- 表情包库 -->
-        <div class="card">
-          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">🖼 表情包库</div>
-
-          <div class="form-group">
-            <label>选择贴纸图片</label>
-            <input type="file" id="sticker-file-input" accept="image/*" onchange="previewStickerFile()" style="font-size:13px">
-            <div id="sticker-preview" style="margin-top:8px;display:none">
-              <img id="sticker-preview-img" style="max-width:100px;max-height:100px;border-radius:8px;border:1px solid var(--border)">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>标签</label>
-            <select id="sticker-tag" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);background:#fff;font-family:inherit;outline:none">
-              <option value="开心">😊 开心</option>
-              <option value="难过">😢 难过</option>
-              <option value="撒娇">🥺 撒娇</option>
-              <option value="日常">🐾 日常</option>
-              <option value="生气">😤 生气</option>
-              <option value="惊讶">😲 惊讶</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>描述（帮助AI判断何时使用）</label>
-            <input type="text" id="sticker-desc" placeholder="比如：尴尬沉默不知道说什么">
-          </div>
-
-          <button class="btn-save" onclick="uploadSticker()" style="margin-bottom:14px">上传贴纸</button>
-
-          <div class="sticker-grid" id="sticker-manage-grid">
-            <div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸</div>
-          </div>
-        </div>
+        <button class="pink-btn">+ 发布</button>
       </div>
+      <div id="moments-list"></div>
     </div>
 
-    <!-- ══ MEMORY ══ -->
+    <!-- ══ READER (记忆) ══ -->
     <div id="page-reader" class="page" style="display:none">
       <div class="memory-wrap">
         <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px">
@@ -294,25 +242,144 @@
       </div>
     </div>
 
+    <!-- ══ DASHBOARD / SETTINGS (我的) ══ -->
+    <div id="page-dashboard" class="page" style="display:none">
+      <div class="data-wrap">
+        <div class="card">
+          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">个性化设置</div>
+          <div class="form-group">
+            <label>系统提示词</label>
+            <textarea id="set-system-prompt" rows="3" placeholder="定义小克的人格和行为方式…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Temperature <span id="set-temp-val" style="color:var(--accentLight)">0.7</span></label>
+            <input type="range" id="set-temperature" min="0" max="2" step="0.1" value="0.7"
+              oninput="document.getElementById('set-temp-val').textContent=this.value">
+          </div>
+          <div class="form-group">
+            <label>最大上下文轮数</label>
+            <input type="number" id="set-max-rounds" min="5" max="100" value="30">
+          </div>
+          <div class="form-group">
+            <label>压缩触发阈值 (tokens)</label>
+            <input type="number" id="set-compress-threshold" min="1000" max="50000" step="500" value="6000">
+          </div>
+          <div class="form-group">
+            <label>压缩后保留轮数</label>
+            <input type="number" id="set-keep-rounds" min="2" max="30" value="10">
+          </div>
+          <div class="form-group">
+            <label>最大回复 Token</label>
+            <input type="number" id="set-max-tokens" min="256" max="32768" step="256" value="4096">
+          </div>
+          <div id="set-msg" style="text-align:center;font-size:12px;margin-bottom:10px;color:var(--accentLight);min-height:18px"></div>
+          <button class="btn-save" onclick="saveSettings()">保存设置</button>
+        </div>
+        <div class="card">
+          <div class="data-header">
+            <div class="t">今日数据</div>
+            <div class="d" id="dashboard-date"></div>
+          </div>
+          <div class="stat-grid" id="dash-stats"></div>
+        </div>
+        <!-- 表情包库 -->
+        <div class="card">
+          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">🖼 表情包库</div>
+          <div class="form-group">
+            <label>选择贴纸图片</label>
+            <input type="file" id="sticker-file-input" accept="image/*" onchange="previewStickerFile()" style="font-size:13px">
+            <div id="sticker-preview" style="margin-top:8px;display:none">
+              <img id="sticker-preview-img" style="max-width:100px;max-height:100px;border-radius:8px;border:1px solid var(--border)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>标签</label>
+            <select id="sticker-tag" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);background:#fff;font-family:inherit;outline:none">
+              <option value="开心">😊 开心</option><option value="难过">😢 难过</option><option value="撒娇">🥺 撒娇</option><option value="日常">🐾 日常</option><option value="生气">😤 生气</option><option value="惊讶">😲 惊讶</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>描述（帮助AI判断何时使用）</label>
+            <input type="text" id="sticker-desc" placeholder="比如：尴尬沉默不知道说什么">
+          </div>
+          <button class="btn-save" onclick="uploadSticker()" style="margin-bottom:14px">上传贴纸</button>
+          <div class="sticker-grid" id="sticker-manage-grid">
+            <div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUB-PAGES (with back button) ══ -->
+    <!-- MOOD -->
+    <div id="page-mood" class="page sub-page" style="display:none"></div>
+    <!-- ANNIVERSARY -->
+    <div id="page-anniversary" class="page sub-page" style="display:none"></div>
+    <!-- CAPSULE -->
+    <div id="page-capsule" class="page sub-page" style="display:none"></div>
+    <!-- ACCOUNT -->
+    <div id="page-account" class="page sub-page" style="display:none"></div>
+    <!-- TODO -->
+    <div id="page-todo" class="page sub-page" style="display:none"></div>
+    <!-- GAME -->
+    <div id="page-game" class="page sub-page" style="display:none"></div>
+    <!-- PUSH placeholder -->
+    <div id="page-push" class="page sub-page" style="display:none"></div>
+
   </div><!-- /main-content -->
 
   <!-- ═══ Bottom nav ═══ -->
   <div id="bottom-nav">
     <button onclick="switchPage('home')" data-nav="home" class="nav-btn active">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 10L11 3L19 10V19H14V14H8V19H3V10Z" stroke="#c47a8a" stroke-width="1.5" fill="#F2C4CE" stroke-linejoin="round"/></svg>
-      <span class="nl on">首页</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M5 10.5L12 4l7 6.5V20a1 1 0 01-1 1H6a1 1 0 01-1-1v-9.5z" fill="#e8a0b4" opacity="0.9"/>
+        <rect x="9" y="14" width="6" height="7" rx="1" fill="#fff" opacity="0.8"/>
+        <path d="M9 4.5c0 0 1.5-2 3-2s3 2 3 2" stroke="#e8a0b4" stroke-width="1.2" fill="none"/>
+      </svg>
+      <span class="nl on">猫窝</span>
     </button>
     <button onclick="switchPage('chat')" data-nav="chat" class="nav-btn">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 4H18C19.1 4 20 4.9 20 6V14C20 15.1 19.1 16 18 16H7L3 20V6C3 4.9 3.9 4 4 4Z" stroke="#c9a0ac" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="8" cy="10" r="1" fill="#c9a0ac"/><circle cx="11" cy="10" r="1" fill="#c9a0ac"/><circle cx="14" cy="10" r="1" fill="#c9a0ac"/></svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <ellipse cx="12" cy="11" rx="8" ry="6" fill="#ddbcc8" opacity="0.9"/>
+        <path d="M8 17l1.5-3" stroke="#ddbcc8" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="9" cy="11" r="1.2" fill="white"/>
+        <circle cx="12" cy="11" r="1.2" fill="white"/>
+        <circle cx="15" cy="11" r="1.2" fill="white"/>
+        <path d="M14 5c1-1 2.5-0.5 3 0.5" stroke="#ddbcc8" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <path d="M10 5c-1-1-2.5-0.5-3 0.5" stroke="#ddbcc8" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>
       <span class="nl dim">聊天</span>
     </button>
+    <button onclick="switchPage('moments')" data-nav="moments" class="nav-btn">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="3.5" fill="#ddbcc8" opacity="0.9"/>
+        <circle cx="17.13" cy="7.4" r="1.5" fill="#ddbcc8" opacity="0.7"/>
+        <circle cx="12" cy="5.5" r="1" fill="#ddbcc8" opacity="0.4"/>
+        <circle cx="6.87" cy="7.4" r="1.5" fill="#ddbcc8" opacity="0.7"/>
+        <circle cx="5.5" cy="12" r="1" fill="#ddbcc8" opacity="0.4"/>
+        <circle cx="6.87" cy="16.6" r="1.5" fill="#ddbcc8" opacity="0.7"/>
+        <circle cx="12" cy="18.5" r="1" fill="#ddbcc8" opacity="0.4"/>
+        <circle cx="17.13" cy="16.6" r="1.5" fill="#ddbcc8" opacity="0.7"/>
+      </svg>
+      <span class="nl dim">朋友圈</span>
+    </button>
     <button onclick="switchPage('reader')" data-nav="reader" class="nav-btn">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C11 3 4 7 4 13C4 16.3 7.1 19 11 19C14.9 19 18 16.3 18 13C18 7 11 3 11 3Z" stroke="#c9a0ac" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M11 8V13L14 15" stroke="#c9a0ac" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span class="nl dim">回忆</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="4" width="7" height="16" rx="2" fill="#ddbcc8" opacity="0.85"/>
+        <rect x="13" y="4" width="7" height="16" rx="2" fill="#ddbcc8" opacity="0.5"/>
+        <path d="M11 5c0 0-1.5 1-1.5 7s1.5 7 1.5 7" stroke="white" stroke-width="0.8" opacity="0.7"/>
+        <path d="M6.5 8h4M6.5 11h4M6.5 14h3" stroke="white" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+      <span class="nl dim">阅读</span>
     </button>
     <button onclick="switchPage('dashboard')" data-nav="dashboard" class="nav-btn">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="14" width="4" height="5" rx="1" fill="none" stroke="#c9a0ac" stroke-width="1.5"/><rect x="9" y="10" width="4" height="9" rx="1" fill="none" stroke="#c9a0ac" stroke-width="1.5"/><rect x="15" y="6" width="4" height="13" rx="1" fill="none" stroke="#c9a0ac" stroke-width="1.5"/></svg>
-      <span class="nl dim">设置</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8.5" r="4" fill="#ddbcc8" opacity="0.9"/>
+        <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="#ddbcc8" opacity="0.5"/>
+        <path d="M15 6c.8-.8 2-.8 2.5.2" stroke="#ddbcc8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M9 6c-.8-.8-2-.8-2.5.2" stroke="#ddbcc8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="nl dim">我的</span>
     </button>
   </div>
 

@@ -90,6 +90,188 @@ body{
 .feature-card svg{width:26px;height:26px}
 .feature-card .lbl{font-size:13px;color:var(--textMid)}
 
+/* ═══════ Home v2 ═══════ */
+/* Hero */
+.home-hero{position:relative;text-align:center;padding:50px 24px 26px;overflow:hidden}
+.home-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center top;opacity:0.14}
+.home-hero-inner{position:relative}
+.home-days-num{font-size:78px;font-weight:200;color:#c47a8a;line-height:1;letter-spacing:-3px}
+.home-days-label{font-size:12px;color:#b08090;letter-spacing:5px;margin-top:3px;font-style:italic}
+.home-days-since{font-size:10px;color:#c9a0ac;margin-top:2px;letter-spacing:2px}
+.home-quote{margin-top:16px;font-size:11.5px;color:#9a7080;line-height:2;font-style:italic}
+.paw-deco{position:absolute;pointer-events:none}
+
+/* Home card grids */
+.home-grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 14px 11px}
+.home-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;padding:0 14px 10px}
+.home-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 14px 12px}
+.home-bottom2{padding-bottom:14px}
+
+/* Big cards (2-col) */
+.home-card-big{
+  background:rgba(255,255,255,0.78);border-radius:20px;overflow:hidden;cursor:pointer;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.home-card-img{height:110px;background-size:cover;background-position:center}
+.home-card-big .home-card-label{font-size:14px;color:#7a5c62;font-weight:500;padding:10px 13px 3px}
+.home-card-big .home-card-sub{font-size:10px;color:#c9a0ac;padding:0 13px 12px}
+
+/* Medium cards (3-col) */
+.home-card-med{
+  background:rgba(255,255,255,0.78);border-radius:16px;overflow:hidden;cursor:pointer;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.home-card-img-sm{height:66px;background-size:cover;background-position:center}
+.home-card-med .home-card-label{font-size:12px;color:#7a5c62;padding:7px 9px 2px}
+.home-card-med .home-card-sub{font-size:9px;color:#c9a0ac;padding:0 9px 9px}
+
+/* Small cards (4-col) */
+.home-card-sm{
+  background:rgba(255,255,255,0.78);border-radius:14px;overflow:hidden;cursor:pointer;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.home-card-img-xs{height:50px;background-size:cover;background-position:center}
+.home-card-label-sm{font-size:11px;color:#7a5c62;padding:5px 0 7px;text-align:center}
+
+/* Row cards (bottom 2) */
+.home-card-row{
+  background:rgba(255,255,255,0.78);border-radius:18px;cursor:pointer;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38);
+  padding:11px 13px;display:flex;align-items:center;gap:9px
+}
+.home-card-emoji{font-size:20px}
+.home-card-row .home-card-label{font-size:12px;color:#7a5c62}
+.home-card-row .home-card-sub{font-size:10px;color:#c9a0ac;margin-top:1px}
+
+/* ═══════ Sub-page header ═══════ */
+.sub-page{padding-bottom:80px}
+.sub-header{display:flex;justify-content:space-between;align-items:flex-end;padding:18px 16px 10px}
+.sub-title{font-size:22px;color:#7a5c62;font-weight:300}
+.sub-desc{font-size:10px;color:#c9a0ac;margin-top:2px;font-style:italic}
+.sub-header-center{text-align:center;padding:24px 16px 12px}
+
+.pink-btn{
+  background:linear-gradient(135deg,#F2C4CE,#e8a0b4);color:#fff;border:none;border-radius:20px;
+  padding:8px 18px;font-size:12px;cursor:pointer;box-shadow:0 3px 10px rgba(232,160,180,0.35);
+  font-family:inherit
+}
+
+/* ═══════ Mood page ═══════ */
+.mood-header-img{margin:0 14px 16px;border-radius:20px;height:140px;opacity:0.7;background-size:cover;background-position:center}
+.mood-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 14px 16px}
+.mood-item{
+  background:rgba(255,255,255,0.78);border-radius:18px;padding:14px 8px;text-align:center;cursor:pointer;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38);
+  transition:border-color .2s,background .2s
+}
+.mood-item.selected{border-color:var(--accentLight)}
+.mood-emoji{font-size:26px;margin-bottom:5px}
+.mood-label{font-size:12px;color:#7a5c62}
+.mood-textarea{width:100%;padding:14px;border-radius:16px;border:1px solid rgba(242,196,206,0.4);
+  background:rgba(255,255,255,0.75);font-size:13px;color:#5c4048;font-family:inherit;resize:none;outline:none;
+  box-sizing:border-box;min-height:90px}
+.mood-textarea:focus{border-color:var(--bubble)}
+.mood-save-btn{width:100%;padding:12px;margin:10px 0 0;font-size:13px}
+
+/* ═══════ Anniversary page ═══════ */
+.anni-header-img{margin:8px 14px 12px;height:100px;border-radius:18px;overflow:hidden;opacity:0.75;background-size:cover;background-position:center top}
+.anni-card{
+  background:rgba(255,255,255,0.78);margin:0 14px 10px;padding:15px 17px;position:relative;overflow:hidden;
+  border-radius:18px;box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.anni-days{position:absolute;right:14px;top:10px;font-size:46px;font-weight:200;color:#F2C4CE;opacity:0.45;line-height:1}
+.anni-title{font-size:15px;color:#5c4048;font-weight:500}
+.anni-date{font-size:10px;color:#c9a0ac;margin-top:3px}
+.anni-note{font-size:12px;color:#9a8088;margin-top:5px}
+.anni-tag{display:inline-block;padding:4px 12px;border-radius:20px;background:rgba(242,196,206,0.28);
+  border:1px solid rgba(242,196,206,0.45);font-size:11px;color:#c47a8a;margin-top:9px}
+
+/* ═══════ Capsule page ═══════ */
+.capsule-create{
+  background:rgba(255,255,255,0.78);padding:22px;text-align:center;margin:0 14px 13px;cursor:pointer;border-radius:20px;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.capsule-circle{width:52px;height:52px;border-radius:50%;background:rgba(242,196,206,0.25);margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;font-size:24px}
+.capsule-row{
+  background:rgba(255,255,255,0.78);margin:0 14px 10px;padding:13px 15px;display:flex;align-items:center;gap:13px;
+  border-radius:18px;box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.capsule-icon{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.capsule-info{flex:1}
+.capsule-info .title{font-size:14px;color:#5c4048;font-weight:500}
+.capsule-info .meta{font-size:10px;color:#c9a0ac;margin-top:2px}
+.capsule-bar{height:3px;background:rgba(242,196,206,0.2);border-radius:2px;margin-top:7px}
+.capsule-bar-fill{height:100%;background:linear-gradient(90deg,#F2C4CE,#e8a0b4);border-radius:2px}
+
+/* ═══════ Account page ═══════ */
+.account-summary{
+  background:linear-gradient(135deg,rgba(242,196,206,0.45),rgba(232,160,180,0.3));
+  padding:17px 19px;margin:14px 14px 13px;border-radius:20px;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.account-summary .label{font-size:10px;color:#c9a0ac}
+.account-summary .amount{font-size:30px;color:#7a5c62;font-weight:200;margin-top:3px}
+.account-summary .bar-wrap{height:4px;background:rgba(255,255,255,0.4);border-radius:2px;margin:11px 0 5px}
+.account-summary .bar-fill{height:100%;background:rgba(196,122,138,0.55);border-radius:2px}
+.account-summary .row{display:flex;justify-content:space-between;font-size:10px;color:#c9a0ac}
+.account-item{
+  background:rgba(255,255,255,0.78);margin:0 14px 9px;padding:12px 13px;border-radius:18px;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.account-item .ai-row{display:flex;justify-content:space-between;align-items:center}
+.account-item .ai-left{display:flex;align-items:center;gap:10px}
+.account-item .ai-emoji{font-size:20px}
+.account-item .ai-label{font-size:13px;color:#5c4048}
+.account-item .ai-meta{font-size:10px;color:#c9a0ac}
+.account-item .ai-amount{font-size:13px;font-weight:500}
+.account-item .ai-bar{height:3px;background:rgba(242,196,206,0.2);border-radius:2px;margin-top:8px}
+.account-item .ai-bar-fill{height:100%;border-radius:2px}
+.account-item .ai-tip{font-size:10px;margin-top:5px;font-style:italic}
+
+/* ═══════ Todo page ═══════ */
+.todo-item{
+  background:rgba(255,255,255,0.78);padding:13px 16px;margin:0 14px 9px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  border-radius:18px;box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.todo-item.done{opacity:0.6}
+.todo-check{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:2px solid rgba(242,196,206,0.6);
+  display:flex;align-items:center;justify-content:center;transition:all .2s}
+.todo-check.checked{background:linear-gradient(135deg,#F2C4CE,#e8a0b4);border-color:#e8a0b4}
+.todo-check.checked::after{content:"✓";color:#fff;font-size:12px}
+.todo-text{font-size:13px;color:#5c4048}
+.todo-text.done{text-decoration:line-through}
+.todo-add{
+  background:rgba(255,255,255,0.78);padding:13px 16px;margin:0 14px 9px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  border-radius:18px;box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px dashed rgba(242,196,206,0.38)
+}
+.todo-add-circle{width:22px;height:22px;border-radius:50%;border:2px dashed rgba(242,196,206,0.6);
+  display:flex;align-items:center;justify-content:center;color:#e8a0b4;font-size:16px}
+
+/* ═══════ Game page ═══════ */
+.game-header-img{margin:0 14px 12px;height:120px;border-radius:18px;overflow:hidden;background-size:cover;background-position:center;opacity:0.8}
+.game-item{
+  background:rgba(255,255,255,0.78);margin:0 14px 10px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;
+  border-radius:18px;box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.game-emoji{font-size:28px;flex-shrink:0}
+.game-info{flex:1}
+.game-info .title{font-size:13px;color:#5c4048;font-weight:500}
+.game-info .desc{font-size:11px;color:#9a8088;margin-top:3px}
+
+/* ═══════ Moments page ═══════ */
+.moment-card{
+  background:rgba(255,255,255,0.78);margin:0 14px 12px;padding:15px 16px;border-radius:18px;
+  box-shadow:0 3px 14px rgba(242,196,206,0.22);border:1px solid rgba(242,196,206,0.38)
+}
+.moment-time{font-size:10px;color:#c9a0ac;margin-bottom:8px}
+.moment-text{font-size:13px;color:#5c4048;line-height:1.7}
+.moment-img{height:120px;border-radius:12px;overflow:hidden;margin-top:10px;margin-bottom:10px;background-size:cover;background-position:center}
+.moment-actions{display:flex;gap:14px;margin-bottom:10px}
+.moment-actions span{font-size:11px;color:#c9a0ac;cursor:pointer}
+.moment-comments{border-top:1px solid rgba(242,196,206,0.3);padding-top:8px}
+.moment-comments div{font-size:11px;color:#9a8088;line-height:1.8}
+
 /* ═══════ Chat ═══════ */
 .chat-wrap{display:flex;flex-direction:column;height:100%;background:var(--bg)}
 .chat-scroll{flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
