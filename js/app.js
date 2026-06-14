@@ -44,7 +44,7 @@ function switchPage(name){
   document.getElementById("top-session-name").textContent=TITLES[name]||SUB_TITLES[name]||name;
   currentPage=name;
   if(name==="home")refreshHomeDays();
-  if(name==="chat"){loadChat();loadSidebarSessions()}
+  if(name==="chat"){fetch(API+"/api/health").catch(()=>{});loadChat();loadSidebarSessions()}
   if(name==="dashboard"){loadDashboard();document.getElementById("dashboard-date").textContent=new Date().toLocaleDateString("zh-CN")}
   if(name==="reader")loadPosts();
   if(name==="moments")renderMoments();
@@ -128,22 +128,33 @@ function sendMessage(){
   msgs.scrollTop=msgs.scrollHeight;inp.value="";inp.style.height="auto";
   const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
   const aw=document.createElement("div");aw.className="msg-row assistant";
-  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
+  aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble">正在想…</div></div>`;msgs.appendChild(aw);
   const b=aw.querySelector(".msg-bubble");
-  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
+  // 等待提示：超过6秒还没收到第一个字，显示"还在想…"
+  const thinkingTimer=setTimeout(()=>{if(b.textContent==="正在想…")b.textContent="还在想…"},6000);
+  // 超时保护：120秒，Render冷启动+DeepSeek可能很慢
+  const abortController=new AbortController();
+  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="宝宝，它还没回复…可能服务器在重启，再试一次？";finish("")},120000);
+  let firstWord=false;
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
     if(!r.ok||!r.body){throw new Error("no stream")}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
     function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
       for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;b.textContent=ft||"...";msgs.scrollTop=msgs.scrollHeight}
+        if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"...";msgs.scrollTop=msgs.scrollHeight}
         else if(dt.type==="done"){finish(ft)}
-        else if(dt.type==="error"){b.textContent="出错了: "+dt.text;finish("")}
+        else if(dt.type==="error"){b.textContent="宝宝，服务器出了点问题："+dt.text;finish("")}
       }catch{}}
     read()})}read()
-  }).catch(()=>{finish("")});
+  }).catch(e=>{
+    if(e.name==="AbortError"){b.textContent="宝宝，等了很久还没回复…服务器可能在睡觉。再发一条试试？"}
+    else{b.textContent="宝宝，连不上了…检查一下网络？"}
+    finish("");
+  });
   function finish(streamText){
+    clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
     ty.style.display="none";isStreaming=!1;sb.className="send-btn off";loadSidebarSessions();
-    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1000);
+    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1500);
   }
 }
 
@@ -159,11 +170,13 @@ function sendMessage(){
   setTimeout(function(){if(splash.parentNode)splash.remove()},4000);
 })();
 
-/* ═══ Input button state ═══ */
+/* ═══ Input button state + backend warmup ═══ */
 document.addEventListener("DOMContentLoaded",()=>{
   const inp=document.getElementById("chat-input"),sb=document.getElementById("send-btn");
   if(inp&&sb){inp.addEventListener("input",()=>{const has=inp.value.trim().length>0;sb.className="send-btn "+(has?"on":"off")})}
   refreshHomeDays();loadSidebarSessions();
+  // 静默预热后端：Render冷启动要30-60秒，提前唤醒
+  setTimeout(()=>{fetch(API+"/api/health").catch(()=>{})},500);
 });
 
 /* ═══ Sessions ═══ */
