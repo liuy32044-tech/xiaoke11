@@ -132,18 +132,47 @@ function sendMessage(){
   const abortController=new AbortController();
   const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="还在等…后端可能还在启动中";finish("")},120000);
   let firstWord=false,backendStarted=false;
+  const fallbackTimer=setTimeout(async ()=>{
+    if(firstWord||backendStarted)return;
+    console.log('[chat] SSE stalled 8s, falling back to /send');
+    abortController.abort();
+    try{
+      b.textContent="还在想…（切换备用通道）";
+      const fbResp=await fetch(API+"/api/chat/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})});
+      const fbData=await fbResp.json();
+      clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
+      if(fbData.reply){
+        b.textContent=fbData.reply;msgs.scrollTop=msgs.scrollHeight;
+        finish(fbData.reply);
+      }else{
+        b.textContent="唔…"+(fbData.error||"没有收到回复");
+        finish("");
+      }
+    }catch(fbErr){
+      clearTimeout(thinkingTimer);clearTimeout(timeoutTimer);
+      b.textContent="网络好像不太稳…再试一次？";
+      finish("");
+    }
+  },8000);
+  console.log('[chat] sending to', API+"/api/chat/stream");
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text}),signal:abortController.signal}).then(r=>{
+    console.log('[chat] fetch ok, status='+r.status+', hasBody='+!!r.body);
     if(!r.ok||!r.body){throw new Error("status "+r.status)}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
-    function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
-      for(const l of dc.decode(v,{stream:true}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="start"){clearTimeout(thinkingTimer);backendStarted=true;b.textContent="小克正在打字…"}
-        else if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
-        else if(dt.type==="done"){finish(ft)}
-        else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="唔…" + dt.text;finish("")}
+    function read(){rd.read().then(({done,v})=>{
+      if(done){console.log('[chat] stream done, text len='+ft.length);finish(ft);return}
+      const raw=dc.decode(v,{stream:true});
+      console.log('[chat] chunk',raw.length+'b', JSON.stringify(raw.slice(0,80)));
+      for(const l of raw.split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
+        if(dt.type==="start"){console.log('[chat] event start');clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);backendStarted=true;b.textContent="小克正在打字…"}
+        else if(dt.type==="text"){ft+=dt.text;if(!firstWord){clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);firstWord=true}b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){console.log('[chat] event done');clearTimeout(fallbackTimer);finish(ft)}
+        else if(dt.type==="error"){console.log('[chat] event error',dt.text);clearTimeout(thinkingTimer);clearTimeout(fallbackTimer);b.textContent="唔…" + dt.text;finish("")}
       }catch{}}
     read()})}read()
   }).catch(e=>{
+    if(fallbackTimer)clearTimeout(fallbackTimer);
+    console.log('[chat] fetch failed:', e.name, e.message);
     clearTimeout(thinkingTimer);
     b.textContent=e.name==="AbortError"?"等了很久没有回应…要不要再发一条试试？":"网络好像不太稳…再试一次？";
     finish("");
