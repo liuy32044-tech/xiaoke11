@@ -660,7 +660,7 @@ let gameActive=null;
 function renderGamePage(){
   const el=document.getElementById("page-game");
   const games=[
-    {id:"guess",title:"猜猜我在想什么",desc:"我心里想一个数字，你来猜",sym:"☯",tag:"益智"},
+    {id:"guess",title:"猜猜我在想什么",desc:"我心里想一个数字，你来猜",sym:"◎",tag:"益智"},
     {id:"challenge",title:"今日随机挑战",desc:"命运之轮给你一个随机小任务",sym:"⊙",tag:"互动"},
     {id:"story",title:"悄悄话接龙",desc:"一人一句，编出属于我们的故事",sym:"✎",tag:"创意"},
     {id:"moodmatch",title:"心情配对",desc:"你今天的心情是？看看我们同频了吗",sym:"♡",tag:"温柔"},
@@ -690,7 +690,7 @@ function startGame(id){
     if(!subPageData.guessHistory)subPageData.guessHistory=[];
     area.innerHTML=`
       <div class="card" style="margin-bottom:10px;text-align:center">
-        <div style="font-size:13px;color:#7a5c62;margin-bottom:8px">☯ 我心里藏了一个 1~100 之间的数字</div>
+        <div style="font-size:13px;color:#7a5c62;margin-bottom:8px">◎ 我心里藏了一个 1~100 之间的数字</div>
         <div style="font-size:11px;color:#c9a0ac;margin-bottom:12px">你猜了 ${subPageData.guessCount} 次</div>
         <input id="guess-input" type="number" min="1" max="100" placeholder="输入你的猜测" style="width:120px;padding:8px 12px;border-radius:12px;border:1px solid var(--border);text-align:center;font-size:18px;font-family:inherit;outline:none">
         <br><button class="pink-btn" style="margin-top:10px;font-size:13px" onclick="doGuess()">猜！</button>
