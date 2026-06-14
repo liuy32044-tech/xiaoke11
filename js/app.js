@@ -46,13 +46,15 @@ let currentPage="home";
 let subPageData={};  // holds transient sub-page state
 
 function switchPage(name){
+  // Hide back bar for main tabs
+  document.getElementById("sub-back-bar").style.display="none";
   // Hide all pages
   document.querySelectorAll(".page").forEach(p=>{p.style.display="none";p.classList.remove("active")});
   const pg=document.getElementById("page-"+name);if(pg){pg.style.display="block";pg.classList.add("active")}
   setNavActive(name);
   document.getElementById("top-session-name").textContent=TITLES[name]||SUB_TITLES[name]||name;
   currentPage=name;
-  if(name==="home"){loadHome();refreshHomeDays()}
+  if(name==="home"){refreshHomeDays()}
   if(name==="chat"){loadChat();loadSidebarSessions()}
   if(name==="dashboard"){loadDashboard();document.getElementById("dashboard-date").textContent=new Date().toLocaleDateString("zh-CN")}
   if(name==="reader")loadPosts();
@@ -62,9 +64,13 @@ function switchPage(name){
 
 /* ═══ Sub-pages (with back button) ═══ */
 function goSubPage(name){
+  document.getElementById("sub-back-bar").style.display="flex";
+  document.getElementById("sub-back-title").textContent=SUB_TITLES[name]||name;
   document.querySelectorAll(".page").forEach(p=>{p.style.display="none";p.classList.remove("active")});
   const pg=document.getElementById("page-"+name);if(pg){pg.style.display="block";pg.classList.add("active")}
-  setNavActive("home");
+  document.querySelectorAll("#bottom-nav .nav-btn").forEach(b=>b.classList.remove("active"));
+  const homeBtn=document.querySelector('[data-nav="home"]');
+  if(homeBtn){homeBtn.classList.add("active");const label=homeBtn.querySelector(".nl");if(label){label.classList.add("on");label.classList.remove("dim")}}
   document.getElementById("top-session-name").textContent=SUB_TITLES[name]||name;
   currentPage=name;
   if(name==="mood")renderMoodPage();
@@ -76,7 +82,10 @@ function goSubPage(name){
   if(name==="push")renderPushPage();
 }
 
-function backToHome(){switchPage("home")}
+function backToHome(){
+  document.getElementById("sub-back-bar").style.display="none";
+  switchPage("home");
+}
 
 /* ═══ Home ═══ */
 function refreshHomeDays(){
