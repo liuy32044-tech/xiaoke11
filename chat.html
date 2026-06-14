@@ -23,9 +23,21 @@
 <div class="chat-input-area" style="position:fixed;bottom:0;left:0;right:0">
   <button onclick="document.getElementById('fi').click()" style="background:var(--bg-input);width:36px;height:36px;font-size:16px;border-radius:50%;border:none;color:var(--text);cursor:pointer">📎</button>
   <input type="file" id="fi" accept="image/*" style="display:none" onchange="upImg()">
+  <button onclick="toggleStickerPanel()" id="sticker-btn" style="background:var(--bg-input);width:36px;height:36px;font-size:16px;border-radius:50%;border:none;color:var(--text);cursor:pointer">😊</button>
   <textarea id="inp" rows="1" placeholder="说点什么..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
   <button id="sbtn" onclick="send()" style="width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:18px;cursor:pointer">↑</button>
 </div>
+
+<!-- 贴纸面板 -->
+<div id="sticker-panel" style="display:none;position:fixed;bottom:60px;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);border-radius:16px 16px 0 0;max-height:50vh;z-index:100;overflow:hidden;box-shadow:0 -4px 20px rgba(0,0,0,0.15)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)">
+    <span style="font-size:14px;font-weight:600">贴纸</span>
+    <button onclick="toggleStickerPanel()" style="background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer">✕</button>
+  </div>
+  <div id="sticker-tags" style="display:flex;overflow-x:auto;gap:6px;padding:8px 16px;-webkit-overflow-scrolling:touch"></div>
+  <div id="sticker-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 16px 16px;overflow-y:auto;max-height:calc(50vh - 100px)"></div>
+</div>
+
 <div style="height:70px"></div>
 
 <script>
@@ -42,7 +54,7 @@ function init(){
 function switchS(id){sid=id;init();loadMsgs()}
 function newS(){fetch(API+"/api/chat/sessions",{method:"POST"}).then(r=>r.json()).then(d=>{sid=d.id;init();loadMsgs()})}
 
-function loadMsgs(){fetch(API+"/api/chat/messages/"+sid).then(r=>r.json()).then(d=>{const e=document.getElementById("msgs");e.innerHTML=d.messages.length?d.messages.map(m=>{if(m.msg_type==="image")try{const i=JSON.parse(m.content);return`<div class="message ${m.author}"><div class="bubble"><img src="data:${i.media_type};base64,${i.data}" style="max-width:180px;border-radius:8px"></div></div>`}catch{return""}return`<div class="message ${m.author}"><div class="bubble">${esc(m.content)}</div></div>`}).join(""):`<div style="text-align:center;color:var(--text-dim);margin-top:60px;font-size:14px">我是小克。有什么想和我说的吗？</div>`;e.scrollTop=e.scrollHeight;document.getElementById("sn").textContent="对话 "+sid})}
+function loadMsgs(){fetch(API+"/api/chat/messages/"+sid).then(r=>r.json()).then(d=>{const e=document.getElementById("msgs");e.innerHTML=d.messages.length?d.messages.map(m=>{if(m.msg_type==="image")try{const i=JSON.parse(m.content);return`<div class="message ${m.author}"><div class="bubble"><img src="data:${i.media_type};base64,${i.data}" style="max-width:180px;border-radius:8px"></div></div>`}catch{return""}return`<div class="message ${m.author}"><div class="bubble">${renderContent(m.content)}</div></div>`}).join(""):`<div style="text-align:center;color:var(--text-dim);margin-top:60px;font-size:14px">我是小克。有什么想和我说的吗？</div>`;e.scrollTop=e.scrollHeight;document.getElementById("sn").textContent="对话 "+sid})}
 
 function send(){
   if(streaming)return;
@@ -50,7 +62,7 @@ function send(){
   if(!t)return;
   streaming=!0;document.getElementById("sbtn").disabled=!0;
   const m=document.getElementById("msgs"),ty=document.getElementById("typing");
-  m.innerHTML+=`<div class="message user"><div class="bubble">${esc(t)}</div></div>`;
+  m.innerHTML+=`<div class="message user"><div class="bubble">${renderContent(t)}</div></div>`;
   m.scrollTop=m.scrollHeight;document.getElementById("inp").value="";ty.style.display="flex";
   const ab=document.createElement("div");ab.className="message assistant";ab.innerHTML='<div class="bubble"></div>';m.appendChild(ab);
   const b=ab.querySelector(".bubble");
@@ -59,6 +71,62 @@ function send(){
 function upImg(){const f=document.getElementById("fi").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);fetch(API+"/api/chat/upload",{method:"POST",body:fd}).then(()=>loadMsgs())}
 
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+// 渲染消息内容：识别 [STICKER:url] 并渲染为图片
+function renderContent(text){
+  if(!text)return"";
+  if(!text.includes("[STICKER:"))return esc(text);
+  const parts=text.split(/(\[STICKER:.*?\])/);
+  return parts.map(p=>{
+    const m=p.match(/^\[STICKER:(.*?)\]$/);
+    if(m)return`<img src="${esc(m[1])}" style="max-width:140px;border-radius:10px;display:block;margin:4px 0" loading="lazy">`;
+    return esc(p);
+  }).join("");
+}
+
+// ── 贴纸面板 ──
+let allStickers=[],activeStickerTag="全部";
+
+function toggleStickerPanel(){
+  const p=document.getElementById("sticker-panel");
+  if(p.style.display==="none"){p.style.display="block";loadStickers()}
+  else p.style.display="none";
+}
+
+function loadStickers(){
+  fetch(API+"/api/stickers").then(r=>r.json()).then(d=>{
+    allStickers=d.stickers||[];
+    // 提取所有不重复标签
+    const tags=["全部",...new Set(allStickers.map(s=>s.tag||"日常"))];
+    document.getElementById("sticker-tags").innerHTML=tags.map(t=>{
+      const active=t===activeStickerTag;
+      return`<button onclick="filterStickers('${esc(t)}')" style="flex-shrink:0;padding:4px 12px;border-radius:14px;border:1px solid var(--border);background:${active?'var(--accent)':'var(--bg-input)'};color:${active?'#fff':'var(--text-dim)'};font-size:12px;cursor:pointer;white-space:nowrap">${esc(t)}</button>`;
+    }).join("");
+    filterStickers(activeStickerTag);
+  });
+}
+
+function filterStickers(tag){
+  activeStickerTag=tag||"全部";
+  const filtered=activeStickerTag==="全部"?allStickers:allStickers.filter(s=>(s.tag||"日常")===activeStickerTag);
+  document.getElementById("sticker-grid").innerHTML=filtered.length?filtered.map(s=>{
+    const label=s.description||s.tag||"";
+    return`<div onclick="sendSticker('${esc(s.url)}')" style="cursor:pointer;background:var(--bg-input);border-radius:8px;padding:4px;text-align:center;border:1px solid var(--border);transition:transform .15s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><img src="${esc(s.url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px" loading="lazy"><div style="font-size:10px;color:var(--text-dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(label)}</div></div>`;
+  }).join(""):`<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);padding:20px;font-size:13px">暂无贴纸</div>`;
+  // 更新标签高亮
+  document.querySelectorAll("#sticker-tags button").forEach(b=>{
+    const isActive=b.textContent===activeStickerTag;
+    b.style.background=isActive?"var(--accent)":"var(--bg-input)";
+    b.style.color=isActive?"#fff":"var(--text-dim)";
+  });
+}
+
+function sendSticker(url){
+  const msg="[STICKER:"+url+"]";
+  document.getElementById("inp").value=msg;
+  document.getElementById("sticker-panel").style.display="none";
+  send();
+}
 
 // Auto-resize textarea
 document.getElementById("inp").addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,100)+"px"});
