@@ -312,7 +312,7 @@ function renderPickerGrid(tag){
   el.innerHTML=pool.map(s=>`<div class="sticker-picker-item" onclick="sendSticker('${s.url.replace(/'/g,"\\'")}')"><img src="${s.url}" loading="lazy" onerror="this.remove()"></div>`).join("");
 }
 
-// 贴纸发送也用 insertAdjacentHTML
+// 贴纸发送 — 同 sendMessage，冷/热智能路由
 function sendSticker(url){
   closeStickerPicker();if(isStreaming)return;
   const msgs=document.getElementById("chat-msgs"),now=new Date(),time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
@@ -323,20 +323,29 @@ function sendSticker(url){
   aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble" id="${pid}">…</div></div>`;
   msgs.appendChild(aw);msgs.scrollTop=msgs.scrollHeight;
   const b=document.getElementById(pid);if(!b)return;
-  const abortController=new AbortController();
-  const timeoutTimer=setTimeout(()=>{abortController.abort();b.textContent="太久没回，再试一次？";finishStickerStream("")},90000);
-  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"}),signal:abortController.signal}).then(r=>{
-    if(!r.ok||!r.body){throw new Error("no stream")}
+  const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},4000);
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"})}).then(r=>{
+    const ct=r.headers.get("Content-Type")||"";
+    if(!ct.includes("event-stream")){
+      return r.json().then(d=>{
+        clearTimeout(thinkingTimer);
+        if(d.reply){b.textContent=d.reply;msgs.scrollTop=msgs.scrollHeight;finishSticker(d.reply)}
+        else{b.textContent="唔…"+(d.error||"没有收到回复");finishSticker("")}
+      });
+    }
+    if(!r.body)throw new Error("no stream body");
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
-    function read(){rd.read().then(({done,v})=>{if(done){finishStickerStream(ft);return}
-      for(const l of dc.decode(v,{stream:true}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
-        if(dt.type==="text"){ft+=dt.text;b.innerHTML=esc(ft)||"…";msgs.scrollTop=msgs.scrollHeight}
-        else if(dt.type==="done"){finishStickerStream(ft)}
-        else if(dt.type==="error"){b.textContent="出错了: "+dt.text;finishStickerStream("")}
+    function read(){rd.read().then(({done,v})=>{if(done){finishSticker(ft);return}
+      const raw=dc.decode(v,{stream:true});
+      for(const l of raw.split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
+        if(dt.type==="start"){clearTimeout(thinkingTimer);b.textContent="小克正在打字…"}
+        else if(dt.type==="text"){ft+=dt.text;clearTimeout(thinkingTimer);b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){finishSticker(ft)}
+        else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="出错了: "+dt.text;finishSticker("")}
       }catch{}}
     read()})}read()
-  }).catch(e=>{b.textContent="发送失败…";finishStickerStream("")});
-  function finishStickerStream(ft){clearTimeout(timeoutTimer);isStreaming=false;lastLoadedSession=currentSession}
+  }).catch(e=>{clearTimeout(thinkingTimer);b.textContent="发送失败…";finishSticker("")});
+  function finishSticker(ft){clearTimeout(thinkingTimer);isStreaming=false;lastLoadedSession=currentSession}
 }
 
 /* ═══ Data persistence + quota protection ═══ */
