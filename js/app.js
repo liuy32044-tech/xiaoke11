@@ -91,8 +91,12 @@ function loadChat(force){
 function msgHTML(m){
   if(m.msg_type==="image"){try{const i=JSON.parse(m.content);return`<div class="msg-row user"><div class="msg-bubble"><img src="data:${i.media_type};base64,${i.data}"></div><div class="msg-time">${fmtTime(m.created_at)}</div></div>`}catch{return""}}
   const ts=fmtTime(m.created_at);
-  if(m.role==="user"||m.author==="user")return`<div class="msg-row user"><div class="msg-bubble">${esc(m.content)}</div><div class="msg-time">${ts}</div></div>`;
-  return`<div class="msg-row assistant"><div class="msg-assistant-row">${CAT34}<div class="msg-bubble">${esc(m.content)}</div></div><div class="msg-time">${ts}</div></div>`;
+  let content=m.content||"";
+  let stickerHtml="";
+  // Extract [STICKER:url] markers before escaping
+  content=content.replace(/\[STICKER:(.*?)\]/g,(_,url)=>{stickerHtml+=`<img src="${url}" class="sticker-in-msg" onerror="this.remove()">`;return""});
+  if(m.role==="user"||m.author==="user")return`<div class="msg-row user"><div class="msg-bubble">${esc(content)}${stickerHtml}</div><div class="msg-time">${ts}</div></div>`;
+  return`<div class="msg-row assistant"><div class="msg-assistant-row">${CAT34}<div class="msg-bubble">${esc(content)}${stickerHtml}</div></div><div class="msg-time">${ts}</div></div>`;
 }
 function fmtTime(t){if(!t)return"";const m=t.match(/(\d{2}):(\d{2})/);return m?m[1]+":"+m[2]:""}
 
@@ -169,6 +173,7 @@ function loadDashboard(){
        <div class="stat-item"><div class="v">$${d.today_cost||0}</div><div class="l">累计费用</div></div>
        <div class="stat-item"><div class="v">${d.total_posts||0}</div><div class="l">记忆数量</div></div>`;
   }).catch(()=>{});
+  loadManageStickers();
 }
 
 function saveSettings(){
@@ -201,6 +206,131 @@ function loadPosts(){
 }
 
 function changeModel(v){console.log("Model:",v)}
+
+/* ═══ Stickers ═══ */
+let _allStickers=[];
+
+function loadManageStickers(){
+  fetch(API+"/api/stickers").then(r=>r.json()).then(d=>{
+    _allStickers=d.stickers||[];
+    renderManageGrid();
+  }).catch(()=>{});
+}
+
+function renderManageGrid(){
+  const el=document.getElementById("sticker-manage-grid");
+  if(!el)return;
+  if(!_allStickers.length){el.innerHTML=`<div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸 🐾</div>`;return}
+  el.innerHTML=_allStickers.map(s=>`<div class="sticker-item">
+    <button class="sticker-del" onclick="event.stopPropagation();deleteSticker(${s.id})">×</button>
+    <img src="${s.url}" loading="lazy" onerror="this.remove()">
+    <div class="tag">${esc(s.tag||"日常")}</div>
+  </div>`).join("");
+}
+
+function previewStickerFile(){
+  const f=document.getElementById("sticker-file-input").files[0];
+  const preview=document.getElementById("sticker-preview"),img=document.getElementById("sticker-preview-img");
+  if(!f){preview.style.display="none";return}
+  const reader=new FileReader();
+  reader.onload=function(e){img.src=e.target.result;preview.style.display="block"}
+  reader.readAsDataURL(f);
+}
+
+function uploadSticker(){
+  const fileInput=document.getElementById("sticker-file-input");
+  const f=fileInput.files[0];
+  if(!f){alert("请先选择图片");return}
+  const tag=document.getElementById("sticker-tag").value;
+  const description=document.getElementById("sticker-desc").value.trim();
+  const reader=new FileReader();
+  reader.onload=function(e){
+    fetch(API+"/api/stickers/upload",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file:e.target.result,tag,description})}).then(r=>r.json()).then(d=>{
+      if(d.error){alert("上传失败: "+d.error);return}
+      fileInput.value="";document.getElementById("sticker-preview").style.display="none";
+      document.getElementById("sticker-desc").value="";
+      loadManageStickers();
+    }).catch(err=>{alert("上传出错: "+err.message)});
+  };
+  reader.readAsDataURL(f);
+}
+
+function deleteSticker(id){
+  if(!confirm("确定删除这个贴纸吗？"))return;
+  fetch(API+"/api/stickers/"+id,{method:"DELETE"}).then(r=>r.json()).then(()=>{loadManageStickers()}).catch(()=>{});
+}
+
+/* ═══ Sticker Picker (chat) ═══ */
+function openStickerPicker(){
+  const overlay=document.getElementById("sticker-picker-overlay");
+  const panel=document.getElementById("sticker-picker");
+  if(!overlay||!panel)return;
+  overlay.classList.add("show");
+  panel.classList.add("open");
+  // Always refresh sticker list
+  fetch(API+"/api/stickers").then(r=>r.json()).then(d=>{
+    _allStickers=d.stickers||[];
+    renderPickerTabs();
+  }).catch(()=>{renderPickerTabs()});
+}
+
+function closeStickerPicker(){
+  const overlay=document.getElementById("sticker-picker-overlay");
+  const panel=document.getElementById("sticker-picker");
+  if(overlay)overlay.classList.remove("show");
+  if(panel)panel.classList.remove("open");
+}
+
+function renderPickerTabs(){
+  const tabs=["全部","开心","难过","撒娇","日常","生气","惊讶"];
+  const el=document.getElementById("sticker-picker-tabs");
+  if(!el)return;
+  el.innerHTML=tabs.map(t=>`<div class="sticker-picker-tab${t==="全部"?" active":""}" onclick="pickTab('${t}')">${t==="全部"?"🌟 "+t:t}</div>`).join("");
+  renderPickerGrid("全部");
+}
+
+function pickTab(tag){
+  document.querySelectorAll(".sticker-picker-tab").forEach(t=>t.classList.toggle("active",t.textContent.includes(tag)));
+  renderPickerGrid(tag==="全部"?null:tag);
+}
+
+function renderPickerGrid(tag){
+  const el=document.getElementById("sticker-picker-grid");
+  if(!el)return;
+  let pool=_allStickers;
+  if(tag)pool=pool.filter(s=>s.tag===tag);
+  if(!pool.length){el.innerHTML=`<div class="sticker-picker-empty">还没有贴纸，去设置页上传吧～</div>`;return}
+  el.innerHTML=pool.map(s=>`<div class="sticker-picker-item" onclick="sendSticker('${s.url.replace(/'/g,"\\'")}')"><img src="${s.url}" loading="lazy" onerror="this.remove()"></div>`).join("");
+}
+
+function sendSticker(url){
+  closeStickerPicker();
+  if(isStreaming)return;
+  const msgs=document.getElementById("chat-msgs"),now=new Date(),time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
+  msgs.innerHTML+=`<div class="msg-row user"><div class="msg-bubble"><img src="${url}" class="sticker-in-msg"></div><div class="msg-time">${time}</div></div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+  // Trigger AI response with sticker as user message
+  const ty=document.getElementById("typing");ty.style.display="flex";msgs.scrollTop=msgs.scrollHeight;
+  isStreaming=!0;
+  const aw=document.createElement("div");aw.className="msg-row assistant";
+  aw.innerHTML=`<div class="msg-assistant-row">${CAT34}<div class="msg-bubble">...</div></div>`;msgs.appendChild(aw);
+  const b=aw.querySelector(".msg-bubble");
+  fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"})}).then(r=>{
+    if(!r.ok||!r.body){throw new Error("no stream")}
+    const rd=r.body.getReader(),dc=new TextDecoder();let ft="";
+    function read(){rd.read().then(({done,v})=>{if(done){finishStickerStream(ft);return}
+      for(const l of dc.decode(v,{stream:!0}).split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
+        if(dt.type==="text"){ft+=dt.text;b.innerHTML=esc(ft)||"...";msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){finishStickerStream(ft)}
+        else if(dt.type==="error"){b.textContent="出错了: "+dt.text;finishStickerStream("")}
+      }catch{}}
+    read()})}read()
+  }).catch(()=>{finishStickerStream("")});
+  function finishStickerStream(ft){
+    ty.style.display="none";isStreaming=!1;loadSidebarSessions();
+    setTimeout(()=>{lastLoadedSession=null;loadChat(true)},1000);
+  }
+}
 
 /* ═══ Utils ═══ */
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}

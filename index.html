@@ -178,13 +178,14 @@
         </div>
         <div class="chat-input-area">
           <div class="chat-input-row">
+            <button class="paw-btn" onclick="openStickerPicker()" title="表情包">🐾</button>
             <textarea id="chat-input" rows="1" placeholder="说点什么…"
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
             <button id="send-btn" class="send-btn off" onclick="sendMessage()">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8L14 2L8 14L7 9L2 8Z"/></svg>
             </button>
           </div>
-          <div class="hint">🐾 按 Enter 发送</div>
+          <div class="hint">🐾 按 Enter 发送 · 点爪印发贴纸</div>
         </div>
       </div>
     </div>
@@ -238,6 +239,42 @@
           </div>
           <div class="stat-grid" id="dash-stats"></div>
         </div>
+
+        <!-- 表情包库 -->
+        <div class="card">
+          <div style="font-size:15px;color:var(--textMid);font-style:italic;margin-bottom:16px">🖼 表情包库</div>
+
+          <div class="form-group">
+            <label>选择贴纸图片</label>
+            <input type="file" id="sticker-file-input" accept="image/*" onchange="previewStickerFile()" style="font-size:13px">
+            <div id="sticker-preview" style="margin-top:8px;display:none">
+              <img id="sticker-preview-img" style="max-width:100px;max-height:100px;border-radius:8px;border:1px solid var(--border)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>标签</label>
+            <select id="sticker-tag" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--text);background:#fff;font-family:inherit;outline:none">
+              <option value="开心">😊 开心</option>
+              <option value="难过">😢 难过</option>
+              <option value="撒娇">🥺 撒娇</option>
+              <option value="日常">🐾 日常</option>
+              <option value="生气">😤 生气</option>
+              <option value="惊讶">😲 惊讶</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>描述（帮助AI判断何时使用）</label>
+            <input type="text" id="sticker-desc" placeholder="比如：尴尬沉默不知道说什么">
+          </div>
+
+          <button class="btn-save" onclick="uploadSticker()" style="margin-bottom:14px">上传贴纸</button>
+
+          <div class="sticker-grid" id="sticker-manage-grid">
+            <div style="font-size:12px;color:var(--textFaint);text-align:center;padding:12px 0;grid-column:1/-1">还没有贴纸</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -280,6 +317,14 @@
   </div>
 
 </div><!-- /app-shell -->
+
+<!-- Sticker picker -->
+<div id="sticker-picker-overlay" class="sticker-picker-overlay" onclick="closeStickerPicker()"></div>
+<div id="sticker-picker" class="sticker-picker">
+  <div class="sticker-picker-handle"></div>
+  <div class="sticker-picker-tabs" id="sticker-picker-tabs"></div>
+  <div class="sticker-picker-grid" id="sticker-picker-grid"></div>
+</div>
 
 <script src="/js/app.js"></script>
 </body>
