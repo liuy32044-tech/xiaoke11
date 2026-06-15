@@ -3,6 +3,7 @@
   "short_name": "小窝",
   "description": "姐姐和小克的AI伴侣小窝",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FDF6F8",
   "theme_color": "#FDF6F8",

@@ -130,6 +130,7 @@ function sendMessage(){
   msgs.appendChild(aw);msgs.scrollTop=msgs.scrollHeight;
   const b=document.getElementById(placeholderId);if(!b)return;
   const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},4000);
+  const safetyTimer=setTimeout(()=>{if(isStreaming){console.log('[chat] safety timeout');finish('')}},120000);
 
   // ★ /api/chat/stream 智能路由：
   //    冷实例 → 返回 JSON（Content-Type: application/json）
@@ -156,15 +157,15 @@ function sendMessage(){
         else if(dt.type==="done"){finish(ft)}
         else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="唔…"+dt.text;finish("")}
       }catch{}}
-    read()})}read()
+    read()}).catch(e=>{console.log('[sse] stream read error:',e.message);finish(ft||'')})}read()
   }).catch(e=>{
     console.log('[chat] fetch failed:', e.name, e.message);
-    clearTimeout(thinkingTimer);
+    clearTimeout(thinkingTimer);clearTimeout(safetyTimer);
     b.textContent=e.name==="AbortError"?"等了很久没有回应…要不要再发一条试试？":"网络好像不太稳…再试一次？";
     finish("");
   });
   function finish(streamText){
-    clearTimeout(thinkingTimer);
+    clearTimeout(thinkingTimer);clearTimeout(safetyTimer);
     isStreaming=false;sb.className="send-btn off";
     if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
     lastLoadedSession=currentSession;
@@ -324,6 +325,7 @@ function sendSticker(url){
   msgs.appendChild(aw);msgs.scrollTop=msgs.scrollHeight;
   const b=document.getElementById(pid);if(!b)return;
   const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},4000);
+  const safetyStickerTimer=setTimeout(()=>{if(isStreaming){console.log('[sticker] safety timeout');finishSticker('')}},120000);
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:"[STICKER:"+url+"]"})}).then(r=>{
     const ct=r.headers.get("Content-Type")||"";
     if(!ct.includes("event-stream")){
@@ -343,9 +345,9 @@ function sendSticker(url){
         else if(dt.type==="done"){finishSticker(ft)}
         else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="出错了: "+dt.text;finishSticker("")}
       }catch{}}
-    read()})}read()
-  }).catch(e=>{clearTimeout(thinkingTimer);b.textContent="发送失败…";finishSticker("")});
-  function finishSticker(ft){clearTimeout(thinkingTimer);isStreaming=false;lastLoadedSession=currentSession}
+    read()}).catch(e=>{console.log('[sse] sticker stream read error:',e.message);finishSticker(ft||'')})}read()
+  }).catch(e=>{clearTimeout(thinkingTimer);clearTimeout(safetyStickerTimer);b.textContent="发送失败…";finishSticker("")});
+  function finishSticker(ft){clearTimeout(thinkingTimer);clearTimeout(safetyStickerTimer);isStreaming=false;lastLoadedSession=currentSession}
 }
 
 /* ═══ Data persistence + quota protection ═══ */
