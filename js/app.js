@@ -166,9 +166,12 @@ function sendMessage(){
   });
   function finish(streamText){
     clearTimeout(thinkingTimer);clearTimeout(safetyTimer);
-    isStreaming=false;sb.className="send-btn off";
-    if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
-    lastLoadedSession=currentSession;
+    try {
+      if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
+      lastLoadedSession=currentSession;
+    } finally {
+      isStreaming=false;sb.className="send-btn off";
+    }
   }
 }
 
@@ -188,6 +191,7 @@ function sendMessage(){
 
 /* ═══ Input + Warmup ═══ */
 document.addEventListener("DOMContentLoaded",()=>{
+  isStreaming=false; // ★ 页面初始化强制重置，防止残留死锁
   const inp=document.getElementById("chat-input"),sb=document.getElementById("send-btn");
   if(inp&&sb){
     inp.addEventListener("input",()=>{const has=inp.value.trim().length>0;sb.className="send-btn "+(has?"on":"off");inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight,100)+"px"});
@@ -347,7 +351,7 @@ function sendSticker(url){
       }catch{}}
     read()}).catch(e=>{console.log('[sse] sticker stream read error:',e.message);finishSticker(ft||'')})}read()
   }).catch(e=>{clearTimeout(thinkingTimer);clearTimeout(safetyStickerTimer);b.textContent="发送失败…";finishSticker("")});
-  function finishSticker(ft){clearTimeout(thinkingTimer);clearTimeout(safetyStickerTimer);isStreaming=false;lastLoadedSession=currentSession}
+  function finishSticker(ft){clearTimeout(thinkingTimer);clearTimeout(safetyStickerTimer);try{lastLoadedSession=currentSession}finally{isStreaming=false}}
 }
 
 /* ═══ Data persistence + quota protection ═══ */
