@@ -118,9 +118,11 @@ function fmtTime(t){if(!t)return"";const m=t.match(/(\d{2}):(\d{2})/);return m?m
 // innerHTML+= 会序列化→重解析整个聊天区，销毁所有现有DOM节点
 // 如果流式回复正在写入某个气泡，那个气泡就被销毁了——用户永远看不到回复
 function sendMessage(){
-  if(isStreaming)return;
+  console.log('[DBG] sendMessage() called, isStreaming=',isStreaming);
+  if(isStreaming){console.log('[DBG] BLOCKED by isStreaming');return;}
   const inp=document.getElementById("chat-input"),text=inp.value.trim();if(!text)return;
   isStreaming=true;const sb=document.getElementById("send-btn");sb.className="send-btn off";
+  console.log('[DBG] lock acquired, sending:', text.slice(0,30));
   const msgs=document.getElementById("chat-msgs"),now=new Date(),time=`${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
   msgs.insertAdjacentHTML("beforeend",`<div class="msg-row user"><div class="msg-bubble">${esc(text)}</div><div class="msg-time">${time}</div></div>`);
   msgs.scrollTop=msgs.scrollHeight;inp.value="";inp.style.height="auto";
@@ -128,53 +130,62 @@ function sendMessage(){
   const aw=document.createElement("div");aw.className="msg-row assistant";
   aw.innerHTML=`<div class="msg-assistant-row">${AVATAR_34}<div class="msg-bubble" id="${placeholderId}">…</div></div>`;
   msgs.appendChild(aw);msgs.scrollTop=msgs.scrollHeight;
-  const b=document.getElementById(placeholderId);if(!b)return;
+  const b=document.getElementById(placeholderId);if(!b){console.log('[DBG] b is null, abort');return;}
+  console.log('[DBG] bubble created, id=',placeholderId,' b in DOM=',!!b.parentElement);
   const thinkingTimer=setTimeout(()=>{if(b.textContent==="…")b.textContent="还在想…"},4000);
-  const safetyTimer=setTimeout(()=>{if(isStreaming){console.log('[chat] safety timeout');finish('')}},120000);
+  const safetyTimer=setTimeout(()=>{if(isStreaming){console.log('[DBG] safety timeout fired');finish('')}},120000);
 
-  // ★ /api/chat/stream 智能路由：
-  //    冷实例 → 返回 JSON（Content-Type: application/json）
-  //    热实例 → 返回 SSE（Content-Type: text/event-stream）
+  console.log('[DBG] fetching', API+'/api/chat/stream');
   fetch(API+"/api/chat/stream",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:currentSession,message:text})}).then(r=>{
     const ct=r.headers.get("Content-Type")||"";
+    console.log('[DBG] response received, status=',r.status,' content-type=',ct,' body=',!!r.body);
     if(!ct.includes("event-stream")){
-      // 冷实例：纯 JSON 响应
+      console.log('[DBG] cold instance path (JSON)');
       return r.json().then(d=>{
+        console.log('[DBG] JSON parsed, reply=',(d.reply||'').slice(0,40),' error=',d.error);
         clearTimeout(thinkingTimer);
         if(d.reply){b.textContent=d.reply;msgs.scrollTop=msgs.scrollHeight;finish(d.reply)}
         else{b.textContent="唔…"+(d.error||"没有收到回复");finish("")}
       });
     }
-    // 热实例：SSE 流式
-    if(!r.body)throw new Error("no stream body");
+    console.log('[DBG] hot instance path (SSE)');
+    if(!r.body){console.log('[DBG] r.body is null!');throw new Error("no stream body");}
     const rd=r.body.getReader(),dc=new TextDecoder();let ft="",firstChunk=true;
-    function read(){rd.read().then(({done,v})=>{if(done){finish(ft);return}
+    function read(){rd.read().then(({done,v})=>{
+      console.log('[DBG] read chunk, done=',done,' bytes=',v?v.length:0);
+      if(done){console.log('[DBG] stream done, ft length=',ft.length);finish(ft);return}
       const raw=dc.decode(v,{stream:true});
-      if(firstChunk){b.textContent="";firstChunk=false} // 第一个字来了就清 "…"
-      for(const l of raw.split("\n")){if(!l.startsWith("data: "))continue;try{const dt=JSON.parse(l.slice(6));
+      console.log('[DBG] raw decoded (',raw.length,'chars):', raw.slice(0,120));
+      if(firstChunk){console.log('[DBG] first chunk, clearing placeholder');b.textContent="";firstChunk=false}
+      for(const l of raw.split("\n")){if(!l.startsWith("data: "))continue;
+        const jsonStr=l.slice(6);console.log('[DBG] SSE data line:', jsonStr.slice(0,80));
+        try{const dt=JSON.parse(jsonStr);
+        console.log('[DBG] parsed type=',dt.type,' text=',(dt.text||'').slice(0,20));
         if(dt.type==="start"){clearTimeout(thinkingTimer);b.textContent="小克正在打字…"}
-        else if(dt.type==="text"){ft+=dt.text;clearTimeout(thinkingTimer);b.textContent=ft||"…";msgs.scrollTop=msgs.scrollHeight}
-        else if(dt.type==="done"){finish(ft)}
-        else if(dt.type==="error"){clearTimeout(thinkingTimer);b.textContent="唔…"+dt.text;finish("")}
-      }catch{}}
-    read()}).catch(e=>{console.log('[sse] stream read error:',e.message);finish(ft||'')})}read()
+        else if(dt.type==="text"){ft+=dt.text;clearTimeout(thinkingTimer);b.textContent=ft||"…";console.log('[DBG] b.textContent set, length=',(ft||'').length,' b in DOM=',!!b.parentElement);msgs.scrollTop=msgs.scrollHeight}
+        else if(dt.type==="done"){console.log('[DBG] done event');finish(ft)}
+        else if(dt.type==="error"){console.log('[DBG] error event:',dt.text);clearTimeout(thinkingTimer);b.textContent="唔…"+dt.text;finish("")}
+      }catch(ex){console.log('[DBG] JSON parse fail:', ex.message, 'raw:', jsonStr.slice(0,60))}
+    }
+    read()}).catch(e=>{console.log('[DBG] read() error:',e.message);finish(ft||'')})}read()
   }).catch(e=>{
-    console.log('[chat] fetch failed:', e.name, e.message);
+    console.log('[DBG] fetch failed:', e.name, e.message);
     clearTimeout(thinkingTimer);clearTimeout(safetyTimer);
     b.textContent=e.name==="AbortError"?"等了很久没有回应…要不要再发一条试试？":"网络好像不太稳…再试一次？";
     finish("");
   });
   function finish(streamText){
+    console.log('[DBG] finish() called, streamText length=',(streamText||'').length,' isStreaming will be set false');
     clearTimeout(thinkingTimer);clearTimeout(safetyTimer);
     try {
       if(!window._sidebarUpdated){loadSidebarSessions();window._sidebarUpdated=true}
       lastLoadedSession=currentSession;
     } finally {
       isStreaming=false;sb.className="send-btn off";
+      console.log('[DBG] lock released, isStreaming=',isStreaming);
     }
   }
 }
-
 /* ═══ Splash Screen ═══ */
 (function(){
   const splash=document.getElementById("splash");
