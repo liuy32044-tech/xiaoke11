@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#FDF6F8">
 <link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" href="/css/app.css?v=20260615">
+<link rel="stylesheet" href="/css/app.css?v=20260615a">
 <title>姐姐和小克</title>
 <link rel="apple-touch-icon" sizes="180x180" href="/app-icon.jpg">
 </head>
@@ -358,6 +358,7 @@
   <div class="sticker-picker-grid" id="sticker-picker-grid"></div>
 </div>
 
-<script src="/js/app.js?v=20260615"></script>
+<script>if("serviceWorker"in navigator)navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()))</script>
+<script src="/js/app.js?v=20260615a"></script>
 </body>
 </html>

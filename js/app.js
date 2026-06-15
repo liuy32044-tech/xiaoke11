@@ -564,4 +564,4 @@ function renderPushPage(){document.getElementById("page-push").innerHTML=`<div c
 /* ═══ Utils ═══ */
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function fmtK(n){return n>=1000?(n/1000).toFixed(1)+"K":n}
-if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js");
+// Service Worker 已禁用 — 拦截 POST/SSE 流导致空气泡
